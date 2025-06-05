@@ -1,6 +1,10 @@
-
+import { useState } from "react";
 import { QuizContainer } from "@/components/QuizContainer";
+import { QuizCreator } from "@/components/QuizCreator";
 import { QuizData } from "@/types/quiz";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 const sampleQuizData: QuizData = {
   "quiz_title": "Understanding a Quadratic Equation with Complex Coefficients",
@@ -82,10 +86,108 @@ const sampleQuizData: QuizData = {
 };
 
 const Index = () => {
+  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create'>('home');
+  const [customQuizData, setCustomQuizData] = useState<QuizData | null>(null);
+
+  const handleCreateCustomQuiz = (quizData: QuizData) => {
+    setCustomQuizData(quizData);
+    setCurrentView('sample');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentView('home');
+    setCustomQuizData(null);
+  };
+
+  if (currentView === 'create') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="container mx-auto">
+          <QuizCreator 
+            onQuizCreate={handleCreateCustomQuiz}
+            onCancel={handleBackToHome}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === 'sample') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="container mx-auto">
+          <div className="mb-4">
+            <Button
+              onClick={handleBackToHome}
+              variant="outline"
+              className="mb-4"
+            >
+              ← Back to Home
+            </Button>
+          </div>
+          <QuizContainer quizData={customQuizData || sampleQuizData} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="container mx-auto">
-        <QuizContainer quizData={sampleQuizData} />
+        <Card className="w-full max-w-4xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-4xl font-bold text-blue-900 mb-4">
+              Quiz Application
+            </CardTitle>
+            <p className="text-lg text-gray-600">
+              Create and take interactive quizzes with detailed explanations
+            </p>
+          </CardHeader>
+          <CardContent className="text-center space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                  Try Sample Quiz
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Experience our quiz with a sample about quadratic equations with complex coefficients
+                </p>
+                <Button
+                  onClick={() => setCurrentView('sample')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                >
+                  Start Sample Quiz
+                </Button>
+              </Card>
+
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                  Create Custom Quiz
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Input your own quiz data in JSON format and create a personalized quiz
+                </p>
+                <Button
+                  onClick={() => setCurrentView('create')}
+                  className="bg-green-600 hover:bg-green-700 text-white w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Quiz
+                </Button>
+              </Card>
+            </div>
+
+            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Features:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Interactive multiple-choice questions</li>
+                <li>• Instant feedback with explanations</li>
+                <li>• Progress tracking and final results</li>
+                <li>• Custom quiz creation from JSON data</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
