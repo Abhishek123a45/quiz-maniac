@@ -26,7 +26,14 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
     setError("");
 
     try {
-      const parsedData = JSON.parse(jsonInput);
+      // Clean up common JSON formatting issues
+      let cleanedJson = jsonInput.trim();
+      
+      // Fix incomplete citations fields (citations": -> citations": "")
+      cleanedJson = cleanedJson.replace(/"citations":\s*}/g, '"citations": ""}');
+      cleanedJson = cleanedJson.replace(/"citations":\s*,/g, '"citations": "",');
+      
+      const parsedData = JSON.parse(cleanedJson);
       
       // Validate the structure
       if (!parsedData.quiz_title || !parsedData.description || !parsedData.questions) {
@@ -53,7 +60,11 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
 
       onQuizCreate(parsedData as QuizData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid JSON format");
+      if (err instanceof SyntaxError) {
+        setError(`JSON formatting error: ${err.message}. Please check for missing commas, quotes, or incomplete fields like "citations": `);
+      } else {
+        setError(err instanceof Error ? err.message : "Invalid JSON format");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -123,6 +134,16 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
   ]
 }`}
           </pre>
+        </div>
+
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+          <h4 className="font-medium text-yellow-800 mb-2">Common JSON Issues:</h4>
+          <ul className="text-sm text-yellow-700 space-y-1">
+            <li>• Make sure all "citations" fields have values: "citations": ""</li>
+            <li>• Check for missing commas between objects</li>
+            <li>• Ensure all quotes are properly closed</li>
+            <li>• Verify all braces {"{"} and brackets ["] are matched</li>
+          </ul>
         </div>
       </CardContent>
     </Card>
