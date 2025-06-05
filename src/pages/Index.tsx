@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { QuizContainer } from "@/components/QuizContainer";
 import { QuizCreator } from "@/components/QuizCreator";
+import { SavedQuizzes } from "@/components/SavedQuizzes";
 import { QuizData } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 
 const sampleQuizData: QuizData = {
   "quiz_title": "Understanding a Quadratic Equation with Complex Coefficients",
@@ -86,10 +87,15 @@ const sampleQuizData: QuizData = {
 };
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create' | 'saved'>('home');
   const [customQuizData, setCustomQuizData] = useState<QuizData | null>(null);
 
   const handleCreateCustomQuiz = (quizData: QuizData) => {
+    setCustomQuizData(quizData);
+    setCurrentView('sample');
+  };
+
+  const handleSelectSavedQuiz = (quizData: QuizData) => {
     setCustomQuizData(quizData);
     setCurrentView('sample');
   };
@@ -109,6 +115,15 @@ const Index = () => {
           />
         </div>
       </div>
+    );
+  }
+
+  if (currentView === 'saved') {
+    return (
+      <SavedQuizzes 
+        onQuizSelect={handleSelectSavedQuiz}
+        onBack={handleBackToHome}
+      />
     );
   }
 
@@ -144,7 +159,7 @@ const Index = () => {
             </p>
           </CardHeader>
           <CardContent className="text-center space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <Card className="p-6 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Try Sample Quiz
@@ -175,6 +190,22 @@ const Index = () => {
                   Create New Quiz
                 </Button>
               </Card>
+
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                  Saved Quizzes
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Access your previously saved quizzes and play them anytime
+                </p>
+                <Button
+                  onClick={() => setCurrentView('saved')}
+                  className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  View Saved Quizzes
+                </Button>
+              </Card>
             </div>
 
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
@@ -184,6 +215,7 @@ const Index = () => {
                 <li>• Instant feedback with explanations</li>
                 <li>• Progress tracking and final results</li>
                 <li>• Custom quiz creation from JSON data</li>
+                <li>• Save and manage your quiz collection</li>
               </ul>
             </div>
           </CardContent>

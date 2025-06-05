@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { QuizData } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useQuizzes } from "@/hooks/useQuizzes";
 
 interface QuizCreatorProps {
   onQuizCreate: (quizData: QuizData) => void;
@@ -15,8 +15,11 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
   const [jsonInput, setJsonInput] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [validatedQuizData, setValidatedQuizData] = useState<QuizData | null>(null);
+  
+  const { saveQuiz, isSaving } = useQuizzes();
 
-  const handleCreateQuiz = () => {
+  const handleValidateQuiz = () => {
     if (!jsonInput.trim()) {
       setError("Please enter JSON data");
       return;
@@ -58,15 +61,29 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         }
       });
 
-      onQuizCreate(parsedData as QuizData);
+      setValidatedQuizData(parsedData as QuizData);
+      setError("");
     } catch (err) {
       if (err instanceof SyntaxError) {
         setError(`JSON formatting error: ${err.message}. Please check for missing commas, quotes, or incomplete fields like "citations": `);
       } else {
         setError(err instanceof Error ? err.message : "Invalid JSON format");
       }
+      setValidatedQuizData(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePlayQuiz = () => {
+    if (validatedQuizData) {
+      onQuizCreate(validatedQuizData);
+    }
+  };
+
+  const handleSaveQuiz = () => {
+    if (validatedQuizData) {
+      saveQuiz(validatedQuizData);
     }
   };
 
@@ -86,7 +103,11 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
             id="json-input"
             placeholder="Paste your quiz JSON data here..."
             value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
+            onChange={(e) => {
+              setJsonInput(e.target.value);
+              setValidatedQuizData(null);
+              setError("");
+            }}
             className="min-h-[300px] mt-2 font-mono text-sm"
           />
         </div>
@@ -97,18 +118,46 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </div>
         )}
 
+        {validatedQuizData && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-green-600 text-sm">✓ Quiz validated successfully!</p>
+            <p className="text-green-600 text-xs mt-1">
+              "{validatedQuizData.quiz_title}" with {validatedQuizData.questions.length} questions
+            </p>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Button
-            onClick={handleCreateQuiz}
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={handleValidateQuiz}
+            disabled={isLoading || !jsonInput.trim()}
+            variant="outline"
           >
-            {isLoading ? "Creating Quiz..." : "Create Quiz"}
+            {isLoading ? "Validating..." : "Validate Quiz"}
           </Button>
+          
+          {validatedQuizData && (
+            <>
+              <Button
+                onClick={handlePlayQuiz}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Play Quiz
+              </Button>
+              <Button
+                onClick={handleSaveQuiz}
+                disabled={isSaving}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isSaving ? "Saving..." : "Save Quiz"}
+              </Button>
+            </>
+          )}
+          
           <Button
             onClick={onCancel}
             variant="outline"
-            disabled={isLoading}
+            disabled={isLoading || isSaving}
           >
             Cancel
           </Button>
