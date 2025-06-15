@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+// Fix: convert questions from JSON and to JSON as needed, to align with typing
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizData } from '@/types/quiz';
@@ -26,9 +27,17 @@ export const useQuizzes = () => {
         .from('quizzes')
         .select('*')
         .order('created_at', { ascending: false });
-      
       if (error) throw error;
-      return data;
+      // Parse questions from JSON if needed
+      return (
+        data?.map((quiz) => ({
+          ...quiz,
+          questions:
+            typeof quiz.questions === "string"
+              ? JSON.parse(quiz.questions)
+              : quiz.questions,
+        })) as SavedQuiz[]
+      );
     },
   });
 
@@ -44,9 +53,14 @@ export const useQuizzes = () => {
         })
         .select()
         .single();
-      
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        questions:
+          typeof data.questions === "string"
+            ? JSON.parse(data.questions)
+            : data.questions,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
@@ -72,7 +86,6 @@ export const useQuizzes = () => {
         .from('quizzes')
         .delete()
         .eq('id', quizId);
-      
       if (error) throw error;
     },
     onSuccess: () => {
@@ -102,3 +115,4 @@ export const useQuizzes = () => {
     isDeleting: deleteQuizMutation.isPending,
   };
 };
+

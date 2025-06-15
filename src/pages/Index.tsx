@@ -6,6 +6,8 @@ import { QuizData } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, BookOpen } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const sampleQuizData: QuizData = {
   "quiz_title": "Understanding a Quadratic Equation with Complex Coefficients",
@@ -86,7 +88,10 @@ const sampleQuizData: QuizData = {
   ]
 };
 
-const Index = () => {
+export default function Index() {
+  const { user, signOut, isLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create' | 'saved'>('home');
   const [customQuizData, setCustomQuizData] = useState<QuizData | null>(null);
 
@@ -147,82 +152,96 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="container mx-auto">
-        <Card className="w-full max-w-4xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-4xl font-bold text-blue-900 mb-4">
-              Quiz Application
-            </CardTitle>
-            <p className="text-lg text-gray-600">
-              Create and take interactive quizzes with detailed explanations
-            </p>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Try Sample Quiz
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Experience our quiz with a sample about quadratic equations with complex coefficients
-                </p>
-                <Button
-                  onClick={() => setCurrentView('sample')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white w-full"
-                >
-                  Start Sample Quiz
-                </Button>
-              </Card>
+    <main>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="container mx-auto">
+          <Card className="w-full max-w-4xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="text-4xl font-bold text-blue-900 mb-4">
+                Quiz Application
+              </CardTitle>
+              <p className="text-lg text-gray-600">
+                Create and take interactive quizzes with detailed explanations
+              </p>
+            </CardHeader>
+            <CardContent className="text-center space-y-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                    Try Sample Quiz
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Experience our quiz with a sample about quadratic equations with complex coefficients
+                  </p>
+                  <Button
+                    onClick={() => setCurrentView('sample')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                  >
+                    Start Sample Quiz
+                  </Button>
+                </Card>
 
-              <Card className="p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Create Custom Quiz
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Input your own quiz data in JSON format and create a personalized quiz
-                </p>
-                <Button
-                  onClick={() => setCurrentView('create')}
-                  className="bg-green-600 hover:bg-green-700 text-white w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create New Quiz
-                </Button>
-              </Card>
+                <Card className="p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                    Create Custom Quiz
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Input your own quiz data in JSON format and create a personalized quiz
+                  </p>
+                  <Button
+                    onClick={() => setCurrentView('create')}
+                    className="bg-green-600 hover:bg-green-700 text-white w-full"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Quiz
+                  </Button>
+                </Card>
 
-              <Card className="p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Saved Quizzes
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Access your previously saved quizzes and play them anytime
-                </p>
-                <Button
-                  onClick={() => setCurrentView('saved')}
-                  className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  View Saved Quizzes
-                </Button>
-              </Card>
-            </div>
+                <Card className="p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                    Saved Quizzes
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Access your previously saved quizzes and play them anytime
+                  </p>
+                  <Button
+                    onClick={() => setCurrentView('saved')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    View Saved Quizzes
+                  </Button>
+                </Card>
+              </div>
 
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Features:</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Interactive multiple-choice questions</li>
-                <li>• Instant feedback with explanations</li>
-                <li>• Progress tracking and final results</li>
-                <li>• Custom quiz creation from JSON data</li>
-                <li>• Save and manage your quiz collection</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Features:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Interactive multiple-choice questions</li>
+                  <li>• Instant feedback with explanations</li>
+                  <li>• Progress tracking and final results</li>
+                  <li>• Custom quiz creation from JSON data</li>
+                  <li>• Save and manage your quiz collection</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+      <div className="flex items-center gap-2 absolute top-4 right-4">
+        {!isLoading &&
+          (user ? (
+            <Button variant="outline" onClick={signOut}>
+              Log out
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={() => navigate("/auth")}>
+              Log in / Sign up
+            </Button>
+          ))}
+      </div>
+    </main>
   );
-};
+}
 
 export default Index;
