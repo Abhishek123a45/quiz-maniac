@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QuizContainer } from "@/components/QuizContainer";
 import { QuizCreator } from "@/components/QuizCreator";
@@ -243,5 +244,3 @@ export default function Index() {
     </main>
   );
 }
-
-export default Index;
