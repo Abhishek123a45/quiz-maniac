@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuizQuestion } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
@@ -28,27 +27,27 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       gainNode.connect(audioContext.destination);
       
       if (isCorrect) {
-        // Success sound - ascending notes
+        // Success sound - louder ascending notes
         oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
         oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
         oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
         
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        gainNode.gain.setValueAtTime(0.8, audioContext.currentTime); // Increased from 0.3
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6); // Longer duration
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.6);
+      } else {
+        // Error sound - louder descending low notes
+        oscillator.frequency.setValueAtTime(400, audioContext.currentTime); // Higher starting frequency
+        oscillator.frequency.setValueAtTime(250, audioContext.currentTime + 0.15);
+        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.3);
+        
+        gainNode.gain.setValueAtTime(0.9, audioContext.currentTime); // Increased from 0.4
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5); // Longer duration
         
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.5);
-      } else {
-        // Error sound - descending low notes
-        oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.15);
-        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.3);
-        
-        gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.4);
       }
     } catch (error) {
       console.log('Audio context not available:', error);
