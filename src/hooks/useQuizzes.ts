@@ -1,6 +1,4 @@
 
-// Fix: convert questions from JSON and to JSON as needed, to align with typing
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizData } from '@/types/quiz';
@@ -49,7 +47,7 @@ export const useQuizzes = () => {
         .insert({
           quiz_title: quizData.quiz_title,
           description: quizData.description,
-          questions: quizData.questions,
+          questions: JSON.stringify(quizData.questions),
         })
         .select()
         .single();
@@ -115,4 +113,3 @@ export const useQuizzes = () => {
     isDeleting: deleteQuizMutation.isPending,
   };
 };
-

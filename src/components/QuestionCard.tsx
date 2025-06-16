@@ -18,11 +18,14 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
   const handleSubmit = () => {
     if (selectedOption !== null) {
       setShowExplanation(true);
-      setTimeout(() => {
-        onAnswerSubmit(selectedOption);
-        setSelectedOption(null);
-        setShowExplanation(false);
-      }, 3000);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (selectedOption !== null) {
+      onAnswerSubmit(selectedOption);
+      setSelectedOption(null);
+      setShowExplanation(false);
     }
   };
 
@@ -83,13 +86,22 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
         )}
 
         <div className="mt-6">
-          <Button
-            onClick={handleSubmit}
-            disabled={selectedOption === null || showExplanation}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-          >
-            {showExplanation ? 'Moving to next question...' : 'Submit Answer'}
-          </Button>
+          {!showExplanation ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={selectedOption === null}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            >
+              Submit Answer
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNextQuestion}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
+            >
+              Next Question
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
