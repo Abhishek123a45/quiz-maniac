@@ -3,6 +3,7 @@ import { useState } from "react";
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { QuestionCard } from "./QuestionCard";
 import { ResultsCard } from "./ResultsCard";
+import { RacingCarProgress } from "./RacingCarProgress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -44,6 +45,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
 
   const score = userAnswers.filter(answer => answer.isCorrect).length;
   const totalQuestions = quizData.questions.length;
+  const progress = ((currentQuestionIndex) / totalQuestions) * 100;
 
   if (!quizStarted) {
     return (
@@ -91,20 +93,11 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-500">
-            Question {currentQuestionIndex + 1} of {totalQuestions}
-          </span>
-          <span className="text-sm text-gray-500">
-            Progress: {Math.round(((currentQuestionIndex) / totalQuestions) * 100)}%
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestionIndex) / totalQuestions) * 100}%` }}
-          />
-        </div>
+        <RacingCarProgress 
+          progress={progress}
+          currentQuestion={currentQuestionIndex + 1}
+          totalQuestions={totalQuestions}
+        />
       </div>
 
       <QuestionCard

@@ -84,6 +84,16 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
     }
   };
 
+  const handleOptionClick = (index: number) => {
+    if (showExplanation) {
+      // Play sound for clicking on options after answer is submitted
+      const isCorrect = question.options[index].is_correct;
+      playSound(isCorrect);
+    } else {
+      setSelectedOption(index);
+    }
+  };
+
   return (
     <Card className="w-full relative">
       {showAnimation && (
@@ -112,7 +122,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           {question.options.map((option, index) => (
             <div 
               key={index} 
-              className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all ${
+              className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                 showExplanation
                   ? option.is_correct
                     ? 'bg-green-50 border-green-500'
@@ -123,6 +133,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
                   ? 'bg-blue-50 border-blue-500'
                   : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
               }`}
+              onClick={() => handleOptionClick(index)}
             >
               <RadioGroupItem 
                 value={index.toString()} 
