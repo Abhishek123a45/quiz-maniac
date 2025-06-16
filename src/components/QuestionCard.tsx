@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { PartyPopper, ThumbsDown } from "lucide-react";
 
 interface QuestionCardProps {
   question: QuizQuestion;
@@ -14,10 +15,63 @@ interface QuestionCardProps {
 export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+
+  const playSound = (isCorrect: boolean) => {
+    const audio = new Audio();
+    if (isCorrect) {
+      // Create a simple success sound using Web Audio API
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } else {
+      // Create a simple error sound
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    }
+  };
 
   const handleSubmit = () => {
     if (selectedOption !== null) {
+      const isCorrect = question.options[selectedOption].is_correct;
+      setIsCorrectAnswer(isCorrect);
       setShowExplanation(true);
+      setShowAnimation(true);
+      
+      // Play sound
+      playSound(isCorrect);
+      
+      // Hide animation after 2 seconds
+      setTimeout(() => {
+        setShowAnimation(false);
+      }, 2000);
     }
   };
 
@@ -26,11 +80,24 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       onAnswerSubmit(selectedOption);
       setSelectedOption(null);
       setShowExplanation(false);
+      setShowAnimation(false);
     }
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full relative">
+      {showAnimation && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/80 rounded-lg">
+          <div className={`animate-bounce text-6xl ${isCorrectAnswer ? 'animate-pulse' : ''}`}>
+            {isCorrectAnswer ? (
+              <PartyPopper className="w-16 h-16 text-green-500 animate-spin" />
+            ) : (
+              <ThumbsDown className="w-16 h-16 text-red-500 animate-pulse" />
+            )}
+          </div>
+        </div>
+      )}
+      
       <CardHeader>
         <CardTitle className="text-xl text-gray-800 leading-relaxed">
           {question.question_text}
