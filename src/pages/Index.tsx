@@ -13,10 +13,29 @@ import { useNavigate } from "react-router-dom";
 const sampleQuizData: QuizData = {
   "quiz_title": "Understanding a Quadratic Equation with Complex Coefficients",
   "description": "This quiz is based on the first question (i) from Question 1 in the provided sources, focusing on a quadratic equation with complex coefficients.",
+  "concepts_used_in_quiz": [
+    {
+      "id": 1,
+      "concept": "Quadratic Equations"
+    },
+    {
+      "id": 2,
+      "concept": "Complex Numbers"
+    },
+    {
+      "id": 3,
+      "concept": "Algebraic Methods"
+    },
+    {
+      "id": 4,
+      "concept": "Factoring Techniques"
+    }
+  ],
   "questions": [
     {
       "id": 1,
       "question_text": "Based on the title of the exercise section and the listing of mathematical chapters in the sources, what type of equation is x² + 10ix - 21 = 0?",
+      "concept_id": 1,
       "options": [
         {"text": "A) Linear Equation", "is_correct": false},
         {"text": "B) Quadratic Equation", "is_correct": true},
@@ -29,6 +48,7 @@ const sampleQuizData: QuizData = {
     {
       "id": 2,
       "question_text": "The equation contains the term '10ix'. Based on the chapters listed in the sources and the use of 'i' in the provided solutions where it's noted that i² = -1, what key mathematical concept, related to 'i', is involved in this equation?",
+      "concept_id": 2,
       "options": [
         {"text": "A) Real Numbers", "is_correct": false},
         {"text": "B) Complex Numbers", "is_correct": true},
@@ -41,6 +61,7 @@ const sampleQuizData: QuizData = {
     {
       "id": 3,
       "question_text": "The solution provided for x² + 10ix - 21 = 0 shows steps that lead to the form (x + 7i)(x + 3i) = 0. What common algebraic method was used here to solve the quadratic equation?",
+      "concept_id": 3,
       "options": [
         {"text": "A) Using the quadratic formula", "is_correct": false},
         {"text": "B) Completing the square", "is_correct": false},
@@ -53,6 +74,7 @@ const sampleQuizData: QuizData = {
     {
       "id": 4,
       "question_text": "In the solution for x² + 10ix - 21 = 0, the step x² + 10ix - 21 = 0 becomes x² + 7ix + 3ix - 21 = 0. Why is the term '10ix' split into '7ix + 3ix'?",
+      "concept_id": 4,
       "options": [
         {"text": "A) To test possible roots of the equation.", "is_correct": false},
         {"text": "B) Because 7 and 3 are related to the roots.", "is_correct": false},
@@ -65,6 +87,7 @@ const sampleQuizData: QuizData = {
     {
       "id": 5,
       "question_text": "Based *only* on the final result presented in the sources for the equation x² + 10ix - 21 = 0, what are the roots (solutions)?",
+      "concept_id": 2,
       "options": [
         {"text": "A) 7i, 3i", "is_correct": false},
         {"text": "B) -7i, 3i", "is_correct": false},
@@ -77,6 +100,7 @@ const sampleQuizData: QuizData = {
     {
       "id": 6,
       "question_text": "The source solution derives the factored form as (x + 7i)(x + 3i) = 0. If you take one of the roots found, say x = -7i, and substitute it into the factor (x + 7i), what is the result?",
+      "concept_id": 4,
       "options": [
         {"text": "A) -21", "is_correct": false},
         {"text": "B) 0", "is_correct": true},

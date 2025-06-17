@@ -10,7 +10,13 @@ interface ConceptAnalyticsProps {
 }
 
 export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProps) => {
+  console.log("ConceptAnalytics - quizData:", quizData);
+  console.log("ConceptAnalytics - concepts_used_in_quiz:", quizData.concepts_used_in_quiz);
+  console.log("ConceptAnalytics - userAnswers:", userAnswers);
+
+  // Check if concepts exist and have data
   if (!quizData.concepts_used_in_quiz || quizData.concepts_used_in_quiz.length === 0) {
+    console.log("No concepts found, returning null");
     return null;
   }
 
@@ -28,14 +34,16 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
     });
 
     // Calculate performance for each concept
-    quizData.questions.forEach(question => {
+    quizData.questions.forEach((question, index) => {
+      console.log(`Question ${index + 1} - concept_id:`, question.concept_id);
+      
       if (question.concept_id) {
         const userAnswer = userAnswers.find(answer => answer.questionId === question.id);
         if (userAnswer) {
           const conceptPerf = conceptMap.get(question.concept_id);
           if (conceptPerf) {
             conceptPerf.total++;
-            conceptPerf.questions.push(question.id);
+            conceptPerf.questions.push(index + 1); // Show question numbers starting from 1
             if (userAnswer.isCorrect) {
               conceptPerf.correct++;
             }
@@ -44,12 +52,15 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
       }
     });
 
-    return Array.from(conceptMap.values()).filter(perf => perf.total > 0);
+    const result = Array.from(conceptMap.values()).filter(perf => perf.total > 0);
+    console.log("Calculated concept performances:", result);
+    return result;
   };
 
   const conceptPerformances = calculateConceptPerformance();
 
   if (conceptPerformances.length === 0) {
+    console.log("No concept performances calculated, returning null");
     return null;
   }
 
@@ -57,12 +68,6 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
     if (percentage >= 80) return 'text-green-600';
     if (percentage >= 60) return 'text-yellow-600';
     return 'text-red-600';
-  };
-
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
   };
 
   return (
