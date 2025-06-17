@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QuizData } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ interface QuizCreatorProps {
 
 export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
   const [jsonInput, setJsonInput] = useState("");
+  const [conceptsInput, setConceptsInput] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [validatedQuizData, setValidatedQuizData] = useState<QuizData | null>(null);
@@ -61,6 +63,26 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         }
       });
 
+      // Parse concepts if provided
+      let concepts = null;
+      if (conceptsInput.trim()) {
+        try {
+          const conceptsData = JSON.parse(conceptsInput.trim());
+          if (conceptsData.concepts_used_in_quiz && Array.isArray(conceptsData.concepts_used_in_quiz)) {
+            concepts = conceptsData.concepts_used_in_quiz;
+          } else {
+            throw new Error("Concepts JSON must have 'concepts_used_in_quiz' array");
+          }
+        } catch (conceptError) {
+          throw new Error(`Invalid concepts JSON: ${conceptError instanceof Error ? conceptError.message : 'Parse error'}`);
+        }
+      }
+
+      // Add concepts to quiz data if provided
+      if (concepts) {
+        parsedData.concepts_used_in_quiz = concepts;
+      }
+
       setValidatedQuizData(parsedData as QuizData);
       setError("");
     } catch (err) {
@@ -108,7 +130,24 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
               setValidatedQuizData(null);
               setError("");
             }}
-            className="min-h-[300px] mt-2 font-mono text-sm"
+            className="min-h-[200px] mt-2 font-mono text-sm"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="concepts-input" className="text-sm font-medium text-gray-700">
+            Concepts JSON Data (Optional - for topic analytics)
+          </Label>
+          <Textarea
+            id="concepts-input"
+            placeholder='{"concepts_used_in_quiz": [{"id": 1, "concept": "Topic Name"}]}'
+            value={conceptsInput}
+            onChange={(e) => {
+              setConceptsInput(e.target.value);
+              setValidatedQuizData(null);
+              setError("");
+            }}
+            className="min-h-[100px] mt-2 font-mono text-sm"
           />
         </div>
 
@@ -123,6 +162,9 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
             <p className="text-green-600 text-sm">✓ Quiz validated successfully!</p>
             <p className="text-green-600 text-xs mt-1">
               "{validatedQuizData.quiz_title}" with {validatedQuizData.questions.length} questions
+              {validatedQuizData.concepts_used_in_quiz && (
+                <span> and {validatedQuizData.concepts_used_in_quiz.length} concepts</span>
+              )}
             </p>
           </div>
         )}
@@ -164,7 +206,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         </div>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-md">
-          <h4 className="font-medium text-gray-800 mb-2">Expected JSON Format:</h4>
+          <h4 className="font-medium text-gray-800 mb-2">Expected Quiz JSON Format:</h4>
           <pre className="text-xs text-gray-600 overflow-x-auto">
 {`{
   "quiz_title": "Your Quiz Title",
@@ -178,7 +220,26 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         {"text": "Option B", "is_correct": true}
       ],
       "explanation": "Explanation text",
-      "citations": ""
+      "citations": "",
+      "concept_id": 1
+    }
+  ]
+}`}
+          </pre>
+        </div>
+
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <h4 className="font-medium text-blue-800 mb-2">Expected Concepts JSON Format:</h4>
+          <pre className="text-xs text-blue-700 overflow-x-auto">
+{`{
+  "concepts_used_in_quiz": [
+    {
+      "id": 1,
+      "concept": "Definition of Verb (Doing words & State)"
+    },
+    {
+      "id": 2,
+      "concept": "Function of Auxiliary Verbs"
     }
   ]
 }`}
@@ -192,6 +253,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
             <li>• Check for missing commas between objects</li>
             <li>• Ensure all quotes are properly closed</li>
             <li>• Verify all braces {"{"} and brackets ["] are matched</li>
+            <li>• Add "concept_id" to questions if using topic analytics</li>
           </ul>
         </div>
       </CardContent>

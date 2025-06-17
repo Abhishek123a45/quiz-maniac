@@ -2,6 +2,7 @@
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConceptAnalytics } from "./ConceptAnalytics";
 
 interface ResultsCardProps {
   score: number;
@@ -62,6 +63,8 @@ export const ResultsCard = ({
         </CardContent>
       </Card>
 
+      <ConceptAnalytics quizData={quizData} userAnswers={userAnswers} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-xl text-gray-800">Review Your Answers</CardTitle>
@@ -71,6 +74,7 @@ export const ResultsCard = ({
             {quizData.questions.map((question, index) => {
               const userAnswer = userAnswers.find(a => a.questionId === question.id);
               const isCorrect = userAnswer?.isCorrect || false;
+              const concept = quizData.concepts_used_in_quiz?.find(c => c.id === question.concept_id);
               
               return (
                 <div 
@@ -89,6 +93,14 @@ export const ResultsCard = ({
                       {isCorrect ? '✓ Correct' : '✗ Incorrect'}
                     </span>
                   </div>
+                  
+                  {concept && (
+                    <div className="mb-2">
+                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        Topic: {concept.concept}
+                      </span>
+                    </div>
+                  )}
                   
                   {userAnswer && (
                     <div className="mb-2">
