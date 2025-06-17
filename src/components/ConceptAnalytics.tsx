@@ -10,9 +10,8 @@ interface ConceptAnalyticsProps {
 }
 
 export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProps) => {
-  console.log("ConceptAnalytics - quizData:", quizData);
-  console.log("ConceptAnalytics - concepts_used_in_quiz:", quizData.concepts_used_in_quiz);
-  console.log("ConceptAnalytics - userAnswers:", userAnswers);
+  console.log("ConceptAnalytics - Full quizData:", JSON.stringify(quizData, null, 2));
+  console.log("ConceptAnalytics - userAnswers:", JSON.stringify(userAnswers, null, 2));
 
   // Only show analytics if concepts are available
   if (!quizData.concepts_used_in_quiz || quizData.concepts_used_in_quiz.length === 0) {
@@ -33,12 +32,20 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
       });
     });
 
+    console.log("Initialized concept map:", Array.from(conceptMap.entries()));
+
     // Calculate performance for each concept
     quizData.questions.forEach((question, index) => {
-      console.log(`Question ${index + 1} - concept_id:`, question.concept_id);
+      console.log(`Processing Question ${index + 1}:`, {
+        id: question.id,
+        concept_id: question.concept_id,
+        question_text: question.question_text.substring(0, 50) + "..."
+      });
       
-      if (question.concept_id) {
+      if (question.concept_id && conceptMap.has(question.concept_id)) {
         const userAnswer = userAnswers.find(answer => answer.questionId === question.id);
+        console.log(`Found user answer for question ${question.id}:`, userAnswer);
+        
         if (userAnswer) {
           const conceptPerf = conceptMap.get(question.concept_id);
           if (conceptPerf) {
@@ -47,13 +54,16 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
             if (userAnswer.isCorrect) {
               conceptPerf.correct++;
             }
+            console.log(`Updated concept ${question.concept_id}:`, conceptPerf);
           }
         }
+      } else {
+        console.log(`Question ${question.id} has no valid concept_id or concept not found in map`);
       }
     });
 
     const result = Array.from(conceptMap.values()).filter(perf => perf.total > 0);
-    console.log("Calculated concept performances:", result);
+    console.log("Final concept performances:", result);
     return result;
   };
 
