@@ -14,9 +14,9 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
   console.log("ConceptAnalytics - concepts_used_in_quiz:", quizData.concepts_used_in_quiz);
   console.log("ConceptAnalytics - userAnswers:", userAnswers);
 
-  // Check if concepts exist and have data
+  // Only show analytics if concepts are available
   if (!quizData.concepts_used_in_quiz || quizData.concepts_used_in_quiz.length === 0) {
-    console.log("No concepts found, returning null");
+    console.log("No concepts found, not showing analytics");
     return null;
   }
 
@@ -43,7 +43,7 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
           const conceptPerf = conceptMap.get(question.concept_id);
           if (conceptPerf) {
             conceptPerf.total++;
-            conceptPerf.questions.push(index + 1); // Show question numbers starting from 1
+            conceptPerf.questions.push(index + 1);
             if (userAnswer.isCorrect) {
               conceptPerf.correct++;
             }
@@ -60,7 +60,7 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
   const conceptPerformances = calculateConceptPerformance();
 
   if (conceptPerformances.length === 0) {
-    console.log("No concept performances calculated, returning null");
+    console.log("No concept performances calculated, not showing analytics");
     return null;
   }
 

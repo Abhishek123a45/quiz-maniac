@@ -63,6 +63,7 @@ export const ResultsCard = ({
         </CardContent>
       </Card>
 
+      {/* Always try to render ConceptAnalytics - it will return null if no concepts data */}
       <ConceptAnalytics quizData={quizData} userAnswers={userAnswers} />
 
       <Card>
