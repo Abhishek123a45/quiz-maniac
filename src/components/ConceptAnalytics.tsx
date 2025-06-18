@@ -2,7 +2,7 @@
 import { QuizData, UserAnswer, ConceptPerformance } from "@/types/quiz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, TrendingUp } from "lucide-react";
+import { CheckCircle, XCircle, TrendingUp, AlertCircle } from "lucide-react";
 
 interface ConceptAnalyticsProps {
   quizData: QuizData;
@@ -10,20 +10,47 @@ interface ConceptAnalyticsProps {
 }
 
 export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProps) => {
-  console.log("ConceptAnalytics - Full quizData:", JSON.stringify(quizData, null, 2));
-  console.log("ConceptAnalytics - userAnswers:", JSON.stringify(userAnswers, null, 2));
+  console.log("=== ConceptAnalytics Debug ===");
+  console.log("Full quizData:", JSON.stringify(quizData, null, 2));
+  console.log("userAnswers:", JSON.stringify(userAnswers, null, 2));
+  console.log("concepts_used_in_quiz exists:", !!quizData.concepts_used_in_quiz);
+  console.log("concepts_used_in_quiz length:", quizData.concepts_used_in_quiz?.length || 0);
 
-  // Only show analytics if concepts are available
+  // Show debug info if concepts are missing
   if (!quizData.concepts_used_in_quiz || quizData.concepts_used_in_quiz.length === 0) {
-    console.log("No concepts found, not showing analytics");
-    return null;
+    console.log("ConceptAnalytics: No concepts available - returning debug info");
+    
+    // Show debug information in development
+    return (
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-yellow-800">
+            <AlertCircle className="w-5 h-5" />
+            Topic Analytics Not Available
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm text-yellow-700">
+            <p>To enable topic-based analytics, provide concepts JSON when creating the quiz.</p>
+            <p><strong>Debug Info:</strong></p>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              <li>Questions with concept_id: {quizData.questions.filter(q => q.concept_id).length}/{quizData.questions.length}</li>
+              <li>Concepts provided: {quizData.concepts_used_in_quiz?.length || 0}</li>
+              <li>User answers: {userAnswers.length}</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const calculateConceptPerformance = (): ConceptPerformance[] => {
+    console.log("=== Calculating Concept Performance ===");
     const conceptMap = new Map<number, ConceptPerformance>();
     
     // Initialize concepts
     quizData.concepts_used_in_quiz!.forEach(concept => {
+      console.log("Initializing concept:", concept);
       conceptMap.set(concept.id, {
         concept,
         correct: 0,
@@ -32,46 +59,83 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
       });
     });
 
-    console.log("Initialized concept map:", Array.from(conceptMap.entries()));
+    console.log("Initialized concept map with keys:", Array.from(conceptMap.keys()));
 
     // Calculate performance for each concept
     quizData.questions.forEach((question, index) => {
-      console.log(`Processing Question ${index + 1}:`, {
-        id: question.id,
-        concept_id: question.concept_id,
-        question_text: question.question_text.substring(0, 50) + "..."
-      });
+      console.log(`\n--- Processing Question ${index + 1} ---`);
+      console.log("Question ID:", question.id);
+      console.log("Concept ID:", question.concept_id);
+      console.log("Question text:", question.question_text.substring(0, 50) + "...");
       
-      if (question.concept_id && conceptMap.has(question.concept_id)) {
-        const userAnswer = userAnswers.find(answer => answer.questionId === question.id);
-        console.log(`Found user answer for question ${question.id}:`, userAnswer);
-        
-        if (userAnswer) {
-          const conceptPerf = conceptMap.get(question.concept_id);
-          if (conceptPerf) {
-            conceptPerf.total++;
-            conceptPerf.questions.push(index + 1);
-            if (userAnswer.isCorrect) {
-              conceptPerf.correct++;
-            }
-            console.log(`Updated concept ${question.concept_id}:`, conceptPerf);
-          }
-        }
-      } else {
-        console.log(`Question ${question.id} has no valid concept_id or concept not found in map`);
+      if (!question.concept_id) {
+        console.log("❌ Question has no concept_id");
+        return;
       }
+      
+      if (!conceptMap.has(question.concept_id)) {
+        console.log("❌ Concept ID not found in concept map");
+        console.log("Available concept IDs:", Array.from(conceptMap.keys()));
+        return;
+      }
+      
+      const userAnswer = userAnswers.find(answer => answer.questionId === question.id);
+      console.log("User answer found:", !!userAnswer, userAnswer);
+      
+      if (!userAnswer) {
+        console.log("❌ No user answer found for this question");
+        return;
+      }
+      
+      const conceptPerf = conceptMap.get(question.concept_id)!;
+      conceptPerf.total++;
+      conceptPerf.questions.push(index + 1);
+      
+      if (userAnswer.isCorrect) {
+        conceptPerf.correct++;
+        console.log("✅ Answer was correct");
+      } else {
+        console.log("❌ Answer was incorrect");
+      }
+      
+      console.log("Updated concept performance:", conceptPerf);
     });
 
     const result = Array.from(conceptMap.values()).filter(perf => perf.total > 0);
-    console.log("Final concept performances:", result);
+    console.log("=== Final Results ===");
+    console.log("Concepts with questions:", result.length);
+    result.forEach(perf => {
+      console.log(`${perf.concept.concept}: ${perf.correct}/${perf.total} (${Math.round(perf.correct/perf.total*100)}%)`);
+    });
+    
     return result;
   };
 
   const conceptPerformances = calculateConceptPerformance();
 
   if (conceptPerformances.length === 0) {
-    console.log("No concept performances calculated, not showing analytics");
-    return null;
+    console.log("❌ No concept performances calculated");
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-800">
+            <AlertCircle className="w-5 h-5" />
+            Topic Analytics Error
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm text-red-700">
+            <p>Unable to calculate topic performance. Possible issues:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Questions missing concept_id values</li>
+              <li>concept_id values don't match concept definitions</li>
+              <li>No user answers recorded</li>
+            </ul>
+            <p className="text-xs mt-2">Check the browser console for detailed debugging information.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const getPerformanceColor = (percentage: number) => {

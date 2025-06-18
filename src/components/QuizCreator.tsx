@@ -16,6 +16,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
   const [jsonInput, setJsonInput] = useState("");
   const [conceptsInput, setConceptsInput] = useState("");
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [validatedQuizData, setValidatedQuizData] = useState<QuizData | null>(null);
   
@@ -29,6 +30,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
 
     setIsLoading(true);
     setError("");
+    setWarning("");
 
     try {
       // Clean up common JSON formatting issues
@@ -65,11 +67,37 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
 
       // Parse concepts if provided
       let concepts = null;
+      let conceptValidationWarnings: string[] = [];
+      
       if (conceptsInput.trim()) {
         try {
           const conceptsData = JSON.parse(conceptsInput.trim());
           if (conceptsData.concepts_used_in_quiz && Array.isArray(conceptsData.concepts_used_in_quiz)) {
             concepts = conceptsData.concepts_used_in_quiz;
+            
+            // Validate concept_id mapping
+            const conceptIds = new Set(concepts.map((c: any) => c.id));
+            const questionsWithConcepts = parsedData.questions.filter((q: any) => q.concept_id);
+            const questionConceptIds = new Set(questionsWithConcepts.map((q: any) => q.concept_id));
+            
+            // Check for missing concept mappings
+            const unmappedConceptIds = Array.from(questionConceptIds).filter(id => !conceptIds.has(id));
+            if (unmappedConceptIds.length > 0) {
+              conceptValidationWarnings.push(`Questions reference concept_ids that don't exist in concepts: ${unmappedConceptIds.join(', ')}`);
+            }
+            
+            // Check for unused concepts
+            const unusedConceptIds = Array.from(conceptIds).filter(id => !questionConceptIds.has(id));
+            if (unusedConceptIds.length > 0) {
+              conceptValidationWarnings.push(`Concepts defined but not used by questions: ${unusedConceptIds.join(', ')}`);
+            }
+            
+            // Check if questions have concept_id
+            const questionsWithoutConcepts = parsedData.questions.filter((q: any) => !q.concept_id);
+            if (questionsWithoutConcepts.length > 0) {
+              conceptValidationWarnings.push(`${questionsWithoutConcepts.length} questions don't have concept_id assigned`);
+            }
+            
           } else {
             throw new Error("Concepts JSON must have 'concepts_used_in_quiz' array");
           }
@@ -83,6 +111,12 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         parsedData.concepts_used_in_quiz = concepts;
       }
 
+      // Set warnings if any
+      if (conceptValidationWarnings.length > 0) {
+        setWarning(`Concept mapping issues found: ${conceptValidationWarnings.join('; ')}`);
+      }
+
+      console.log("QuizCreator - Validated quiz data:", JSON.stringify(parsedData, null, 2));
       setValidatedQuizData(parsedData as QuizData);
       setError("");
     } catch (err) {
@@ -99,6 +133,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
 
   const handlePlayQuiz = () => {
     if (validatedQuizData) {
+      console.log("QuizCreator - Sending quiz data to play:", JSON.stringify(validatedQuizData, null, 2));
       onQuizCreate(validatedQuizData);
     }
   };
@@ -129,6 +164,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
               setJsonInput(e.target.value);
               setValidatedQuizData(null);
               setError("");
+              setWarning("");
             }}
             className="min-h-[200px] mt-2 font-mono text-sm"
           />
@@ -146,6 +182,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
               setConceptsInput(e.target.value);
               setValidatedQuizData(null);
               setError("");
+              setWarning("");
             }}
             className="min-h-[100px] mt-2 font-mono text-sm"
           />
@@ -157,13 +194,21 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </div>
         )}
 
+        {warning && (
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-yellow-600 text-sm">⚠️ {warning}</p>
+          </div>
+        )}
+
         {validatedQuizData && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-md">
             <p className="text-green-600 text-sm">✓ Quiz validated successfully!</p>
             <p className="text-green-600 text-xs mt-1">
               "{validatedQuizData.quiz_title}" with {validatedQuizData.questions.length} questions
-              {validatedQuizData.concepts_used_in_quiz && (
-                <span> and {validatedQuizData.concepts_used_in_quiz.length} concepts</span>
+              {validatedQuizData.concepts_used_in_quiz ? (
+                <span> and {validatedQuizData.concepts_used_in_quiz.length} concepts for analytics</span>
+              ) : (
+                <span> (no analytics - no concepts provided)</span>
               )}
             </p>
           </div>
