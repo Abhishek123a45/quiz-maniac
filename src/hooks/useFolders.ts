@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface Folder {
   id: string;
@@ -21,33 +22,51 @@ export interface FolderWithChildren extends Folder {
 export const useFolders = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch all folders
   const { data: folders, isLoading, error } = useQuery({
-    queryKey: ['folders'],
+    queryKey: ['folders', user?.id],
     queryFn: async (): Promise<Folder[]> => {
+      if (!user) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('folders')
         .select('*')
+        .eq('user_id', user.id)
         .order('name');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching folders:', error);
+        throw error;
+      }
       return data || [];
     },
+    enabled: !!user,
   });
 
   // Create folder mutation
   const createFolderMutation = useMutation({
     mutationFn: async ({ name, parentId, color }: { name: string; parentId?: string; color?: string }) => {
+      if (!user) {
+        throw new Error('User must be authenticated to create folders');
+      }
+
       const { data, error } = await supabase
         .from('folders')
         .insert({
           name,
           parent_id: parentId || null,
           color: color || '#3B82F6',
+          user_id: user.id,
         })
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating folder:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -71,6 +90,10 @@ export const useFolders = () => {
   // Update folder mutation
   const updateFolderMutation = useMutation({
     mutationFn: async ({ id, name, color }: { id: string; name?: string; color?: string }) => {
+      if (!user) {
+        throw new Error('User must be authenticated to update folders');
+      }
+
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
       if (color !== undefined) updateData.color = color;
@@ -80,6 +103,7 @@ export const useFolders = () => {
         .from('folders')
         .update(updateData)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
       if (error) throw error;
@@ -105,10 +129,15 @@ export const useFolders = () => {
   // Delete folder mutation
   const deleteFolderMutation = useMutation({
     mutationFn: async (folderId: string) => {
+      if (!user) {
+        throw new Error('User must be authenticated to delete folders');
+      }
+
       const { error } = await supabase
         .from('folders')
         .delete()
-        .eq('id', folderId);
+        .eq('id', folderId)
+        .eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {

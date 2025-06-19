@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizData } from '@/types/quiz';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SavedQuiz {
   id: string;
@@ -18,10 +19,11 @@ interface SavedQuiz {
 export const useQuizzes = (folderId?: string | null) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch quizzes (optionally filtered by folder)
   const { data: quizzes, isLoading, error } = useQuery({
-    queryKey: ['quizzes', folderId],
+    queryKey: ['quizzes', folderId, user?.id],
     queryFn: async (): Promise<SavedQuiz[]> => {
       let query = supabase
         .from('quizzes')
@@ -33,8 +35,18 @@ export const useQuizzes = (folderId?: string | null) => {
         query = query.eq('folder_id', folderId);
       }
 
+      // If user is authenticated, filter by user_id, otherwise get all quizzes without user_id (legacy)
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        query = query.is('user_id', null);
+      }
+
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching quizzes:', error);
+        throw error;
+      }
       
       // Parse questions from JSON if needed
       return (
@@ -45,8 +57,9 @@ export const useQuizzes = (folderId?: string | null) => {
               ? JSON.parse(quiz.questions)
               : quiz.questions,
         })) as SavedQuiz[]
-      );
+      ) || [];
     },
+    enabled: true, // Always enabled, but filtered based on auth state
   });
 
   // Save quiz mutation (updated to include user_id)
@@ -60,6 +73,7 @@ export const useQuizzes = (folderId?: string | null) => {
           description: quiz.description,
           questions: JSON.stringify(quiz.questions),
           folder_id: folderId || null,
+          user_id: user?.id || null,
         })
         .select()
         .single();

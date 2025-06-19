@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Trash2, Play, Calendar, Folder, Search, Edit, Move } from "lucide-react";
+import { Trash2, Play, Calendar, Folder, Search, Edit, LogIn } from "lucide-react";
 import { useQuizzes } from "@/hooks/useQuizzes";
 import { useFolders, Folder as FolderType, FolderWithChildren } from "@/hooks/useFolders";
 import { QuizData } from "@/types/quiz";
 import { FolderCreator } from "./FolderCreator";
 import { FolderBreadcrumb } from "./FolderBreadcrumb";
 import { FolderTree } from "./FolderTree";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface SavedQuizzesProps {
   onQuizSelect: (quiz: QuizData) => void;
@@ -24,6 +26,8 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
   const [editName, setEditName] = useState("");
   const [editColor, setEditColor] = useState("");
 
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { quizzes, isLoading: quizzesLoading, deleteQuiz, moveQuiz, isDeleting } = useQuizzes(currentFolderId);
   const { 
     folderTree, 
@@ -113,6 +117,24 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
           </Button>
           <h1 className="text-3xl font-bold text-blue-900 mb-2">Saved Quizzes</h1>
           <p className="text-gray-600">Your collection of saved quizzes organized in folders</p>
+          
+          {!user && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <LogIn className="w-5 h-5 text-yellow-600" />
+                <p className="text-yellow-800">
+                  Sign in to create folders and organize your quizzes. 
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-yellow-800 underline ml-1"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Sign in here
+                  </Button>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
@@ -124,7 +146,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                   <Folder className="w-5 h-5" />
                   Folders
                 </CardTitle>
-                <FolderCreator parentId={currentFolderId} parentName={currentFolder?.name} />
+                {user && <FolderCreator parentId={currentFolderId} parentName={currentFolder?.name} />}
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -135,12 +157,14 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                   >
                     All Quizzes
                   </Button>
-                  <FolderTree
-                    folders={folderTree}
-                    currentFolderId={currentFolderId}
-                    onSelectFolder={setCurrentFolderId}
-                    onEditFolder={handleEditFolder}
-                  />
+                  {user && (
+                    <FolderTree
+                      folders={folderTree}
+                      currentFolderId={currentFolderId}
+                      onSelectFolder={setCurrentFolderId}
+                      onEditFolder={handleEditFolder}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -148,11 +172,13 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <FolderBreadcrumb
-              currentFolder={currentFolder}
-              folderPath={folderPath}
-              onNavigateToFolder={setCurrentFolderId}
-            />
+            {user && (
+              <FolderBreadcrumb
+                currentFolder={currentFolder}
+                folderPath={folderPath}
+                onNavigateToFolder={setCurrentFolderId}
+              />
+            )}
 
             {/* Search */}
             <div className="mb-6">
