@@ -9,32 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quizzes: {
         Row: {
           created_at: string
           description: string
+          folder_id: string | null
           id: string
           questions: Json
           quiz_title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           description: string
+          folder_id?: string | null
           id?: string
           questions: Json
           quiz_title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           description?: string
+          folder_id?: string | null
           id?: string
           questions?: Json
           quiz_title?: string
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

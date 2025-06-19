@@ -11,21 +11,31 @@ interface SavedQuiz {
   questions: QuizData['questions'];
   created_at: string;
   updated_at: string;
+  folder_id: string | null;
+  user_id: string | null;
 }
 
-export const useQuizzes = () => {
+export const useQuizzes = (folderId?: string | null) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all quizzes
+  // Fetch quizzes (optionally filtered by folder)
   const { data: quizzes, isLoading, error } = useQuery({
-    queryKey: ['quizzes'],
+    queryKey: ['quizzes', folderId],
     queryFn: async (): Promise<SavedQuiz[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quizzes')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Filter by folder if specified
+      if (folderId !== undefined) {
+        query = query.eq('folder_id', folderId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
+      
       // Parse questions from JSON if needed
       return (
         data?.map((quiz) => ({
@@ -39,15 +49,17 @@ export const useQuizzes = () => {
     },
   });
 
-  // Save quiz mutation
+  // Save quiz mutation (updated to include user_id)
   const saveQuizMutation = useMutation({
-    mutationFn: async (quizData: QuizData) => {
+    mutationFn: async (quizData: QuizData & { folderId?: string }) => {
+      const { folderId, ...quiz } = quizData;
       const { data, error } = await supabase
         .from('quizzes')
         .insert({
-          quiz_title: quizData.quiz_title,
-          description: quizData.description,
-          questions: JSON.stringify(quizData.questions),
+          quiz_title: quiz.quiz_title,
+          description: quiz.description,
+          questions: JSON.stringify(quiz.questions),
+          folder_id: folderId || null,
         })
         .select()
         .single();
@@ -74,6 +86,35 @@ export const useQuizzes = () => {
         variant: "destructive",
       });
       console.error('Error saving quiz:', error);
+    },
+  });
+
+  // Move quiz to folder mutation
+  const moveQuizMutation = useMutation({
+    mutationFn: async ({ quizId, folderId }: { quizId: string; folderId: string | null }) => {
+      const { error } = await supabase
+        .from('quizzes')
+        .update({ 
+          folder_id: folderId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', quizId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+      toast({
+        title: "Success",
+        description: "Quiz moved successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to move quiz. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Error moving quiz:', error);
     },
   });
 
@@ -108,8 +149,10 @@ export const useQuizzes = () => {
     isLoading,
     error,
     saveQuiz: saveQuizMutation.mutate,
+    moveQuiz: moveQuizMutation.mutate,
     deleteQuiz: deleteQuizMutation.mutate,
     isSaving: saveQuizMutation.isPending,
+    isMoving: moveQuizMutation.isPending,
     isDeleting: deleteQuizMutation.isPending,
   };
 };
