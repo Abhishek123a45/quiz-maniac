@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizData } from '@/types/quiz';
@@ -35,13 +34,6 @@ export const useQuizzes = (folderId?: string | null) => {
         query = query.eq('folder_id', folderId);
       }
 
-      // If user is authenticated, filter by user_id, otherwise get all quizzes without user_id (legacy)
-      if (user) {
-        query = query.eq('user_id', user.id);
-      } else {
-        query = query.is('user_id', null);
-      }
-
       const { data, error } = await query;
       if (error) {
         console.error('Error fetching quizzes:', error);
@@ -59,7 +51,7 @@ export const useQuizzes = (folderId?: string | null) => {
         })) as SavedQuiz[]
       ) || [];
     },
-    enabled: true, // Always enabled, but filtered based on auth state
+    enabled: true,
   });
 
   // Save quiz mutation (updated to include user_id)
