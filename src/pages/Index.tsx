@@ -182,8 +182,9 @@ export default function Index() {
         <div className="container mx-auto">
           <Card className="w-full max-w-4xl mx-auto">
             <CardHeader className="text-center">
-              <CardTitle className="text-4xl font-bold text-blue-900 mb-4">
-                Quiz Application
+              <CardTitle className="flex items-center justify-center text-4xl font-bold text-red-400 mb-4">
+                <span>Quizified</span>
+                <img className="h-20" src="/logo.png"/>
               </CardTitle>
               <p className="text-lg text-gray-600">
                 Create and take interactive quizzes with detailed explanations
