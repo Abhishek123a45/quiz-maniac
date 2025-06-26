@@ -46,7 +46,7 @@ export const RacingCarProgress = ({ progress, currentQuestion, totalQuestions }:
           style={{ left: `calc(${progress}% - 12px)` }}
         >
           <div className="relative">
-            <Car className="w-6 h-6 text-red-600 drop-shadow-lg transform rotate-90" />
+          <img src="/sportscar.gif" alt="Racing Car" className="w-16 h-16 object-contain drop-shadow-lg" />
             {/* Car exhaust effect */}
             {progress > 0 && (
               <div className="absolute -left-2 top-1/2 transform -translate-y-1/2">
