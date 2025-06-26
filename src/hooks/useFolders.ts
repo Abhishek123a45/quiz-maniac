@@ -127,36 +127,54 @@ export const useFolders = () => {
   });
 
   // Delete folder mutation
-  const deleteFolderMutation = useMutation({
-    mutationFn: async (folderId: string) => {
-      if (!user) {
-        throw new Error('User must be authenticated to delete folders');
-      }
+  // This is the NEW code to paste
+const deleteFolderMutation = useMutation({
+  mutationFn: async (folderId: string) => {
+    if (!user) {
+      throw new Error('User must be authenticated to delete folders');
+    }
 
-      const { error } = await supabase
-        .from('folders')
-        .delete()
-        .eq('id', folderId)
-        .eq('user_id', user.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['folders'] });
-      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
-      toast({
-        title: "Success",
-        description: "Folder deleted successfully!",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete folder. Please try again.",
-        variant: "destructive",
-      });
-      console.error('Error deleting folder:', error);
-    },
-  });
+    // Step 1: Move all quizzes from this folder to the root level.
+    // This is crucial to prevent orphaned data or foreign key errors.
+    const { error: updateError } = await supabase
+      .from('quizzes')
+      .update({ folder_id: null })
+      .eq('user_id', user.id)
+      .eq('folder_id', folderId);
+
+    if (updateError) {
+      console.error('Error moving quizzes from deleted folder:', updateError);
+      throw updateError;
+    }
+
+    // Step 2: Delete the now-empty folder.
+    const { error: deleteError } = await supabase
+      .from('folders')
+      .delete()
+      .eq('id', folderId)
+      .eq('user_id', user.id);
+
+    if (deleteError) throw deleteError;
+  },
+  onSuccess: () => {
+    // Invalidate both folders and quizzes to reflect the changes
+    queryClient.invalidateQueries({ queryKey: ['folders'] });
+    queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+    toast({
+      title: "Success",
+      description: "Folder deleted and quizzes moved to root.",
+    });
+  },
+  onError: (error) => {
+    toast({
+      title: "Error",
+      description: "Failed to delete folder. Please try again.",
+      variant: "destructive",
+    });
+    console.error('Error deleting folder:', error);
+  },
+});
+
 
   // Build folder tree structure
   const buildFolderTree = (folders: Folder[]): FolderWithChildren[] => {
