@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Trash2, Play, Calendar, Folder, Search, Edit, LogIn } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Trash2, Play, Calendar, Folder, Search, Edit, LogIn, Move, Home, FolderOpen } from "lucide-react";
 import { useQuizzes } from "@/hooks/useQuizzes";
 import { useFolders, Folder as FolderType, FolderWithChildren } from "@/hooks/useFolders";
 import { QuizData } from "@/types/quiz";
@@ -28,7 +29,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { quizzes, isLoading: quizzesLoading, deleteQuiz, moveQuiz, isDeleting } = useQuizzes(currentFolderId);
+  const { quizzes, isLoading: quizzesLoading, deleteQuiz, moveQuiz, isDeleting, isMoving } = useQuizzes(currentFolderId);
   const { 
     folderTree, 
     folders = [], 
@@ -36,6 +37,10 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
     updateFolder,
     isUpdating 
   } = useFolders();
+
+  const handleMoveQuiz = (quizId: string, folderId: string | null) => {
+    moveQuiz({ quizId, folderId });
+  };
 
   const getCurrentFolder = (): FolderType | null => {
     if (!currentFolderId) return null;
@@ -97,6 +102,41 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
     "#3B82F6", "#10B981", "#F59E0B", "#EF4444", 
     "#8B5CF6", "#06B6D4", "#84CC16", "#F97316"
   ];
+
+  const renderMoveOptions = (foldersToRender: FolderWithChildren[], quizId: string, currentQuizFolderId: string | null) => {
+    return foldersToRender.map(folder => {
+      // Don't show the option to move a quiz to the folder it's already in.
+      if (folder.id === currentQuizFolderId) {
+        return null;
+      }
+  
+      if (folder.children && folder.children.length > 0) {
+        return (
+          <DropdownMenuSub key={folder.id}>
+            <DropdownMenuSubTrigger>
+              <Folder className="w-4 h-4 mr-2" style={{ color: folder.color }} />
+              <span>{folder.name}</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => handleMoveQuiz(quizId, folder.id)}>
+                <FolderOpen className="w-4 h-4 mr-2" style={{ color: folder.color }} />
+                <span>Move to "{folder.name}"</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {renderMoveOptions(folder.children, quizId, currentQuizFolderId)}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        );
+      } else {
+        return (
+          <DropdownMenuItem key={folder.id} onClick={() => handleMoveQuiz(quizId, folder.id)}>
+            <Folder className="w-4 h-4 mr-2" style={{ color: folder.color }} />
+            <span>{folder.name}</span>
+          </DropdownMenuItem>
+        );
+      }
+    });
+  };
 
   if (quizzesLoading || foldersLoading) {
     return (
@@ -232,15 +272,35 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                           <Play className="w-4 h-4 mr-2" />
                           Play
                         </Button>
-                        <Button
-                          onClick={() => handleDeleteQuiz(quiz.id, quiz.quiz_title)}
-                          variant="outline"
-                          size="icon"
-                          disabled={isDeleting}
-                          className="hover:bg-red-50 hover:border-red-200"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
+                        {user && (
+                          <>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" disabled={isMoving}>
+                                  <Move className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleMoveQuiz(quiz.id, null)} disabled={quiz.folder_id === null}>
+                                  <Home className="w-4 h-4 mr-2" />
+                                  <span>Move to All Quizzes</span>
+                                </DropdownMenuItem>
+                                {folderTree.length > 0 && <DropdownMenuSeparator />}
+                                {renderMoveOptions(folderTree, quiz.id, quiz.folder_id)}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <Button
+                              onClick={() => handleDeleteQuiz(quiz.id, quiz.quiz_title)}
+                              variant="outline"
+                              size="icon"
+                              disabled={isDeleting}
+                              className="hover:bg-red-50 hover:border-red-200"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
