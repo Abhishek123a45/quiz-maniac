@@ -1,4 +1,3 @@
-
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ interface ResultsCardProps {
   quizData: QuizData;
   userAnswers: UserAnswer[];
   onRestart: () => void;
+  totalScore: number; // Added missing totalScore prop
 }
 
 export const ResultsCard = ({ 
@@ -17,7 +17,8 @@ export const ResultsCard = ({
   totalQuestions, 
   quizData, 
   userAnswers, 
-  onRestart 
+  onRestart,
+  totalScore // Added totalScore to destructuring
 }: ResultsCardProps) => {
   const percentage = Math.round((score / totalQuestions) * 100);
   
@@ -49,6 +50,10 @@ export const ResultsCard = ({
             <p className="text-xl text-gray-600 mb-2">
               {score} out of {totalQuestions} correct
             </p>
+            {/* Display total score */}
+            <p className="text-lg text-blue-600 font-medium mb-2">
+              Total Score: {totalScore} points
+            </p>
             <p className={`text-lg font-medium ${getScoreColor()}`}>
               {getScoreMessage()}
             </p>
@@ -66,6 +71,7 @@ export const ResultsCard = ({
       {/* Always try to render ConceptAnalytics - it will return null if no concepts data */}
       <ConceptAnalytics quizData={quizData} userAnswers={userAnswers} />
 
+      
       <Card>
         <CardHeader>
           <CardTitle className="text-xl text-gray-800">Review Your Answers</CardTitle>
