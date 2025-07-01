@@ -65,11 +65,6 @@ export const SubQuestionCard = ({
                 className="flex-1 cursor-pointer text-gray-600 text-sm"
               >
                 {option.text}
-                {option.score && (
-                  <span className="ml-2 text-xs text-blue-600 font-medium">
-                    ({option.score > 0 ? '+' : ''}{option.score} pts)
-                  </span>
-                )}
               </Label>
               {showExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium text-sm">✓</span>

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { QuestionCard } from "./QuestionCard";
 import { ResultsCard } from "./ResultsCard";
@@ -11,27 +11,57 @@ interface QuizContainerProps {
   quizData: QuizData;
 }
 
+// Fisher-Yates shuffle algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export const QuizContainer = ({ quizData }: QuizContainerProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [shuffledQuizData, setShuffledQuizData] = useState<QuizData>(quizData);
+
+  // Shuffle questions and options when quiz starts
+  useEffect(() => {
+    if (quizStarted && !showResults) {
+      const shuffledQuestions = shuffleArray(quizData.questions).map(question => ({
+        ...question,
+        options: shuffleArray(question.options),
+        sub_questions: question.sub_questions?.map(subQ => ({
+          ...subQ,
+          options: shuffleArray(subQ.options)
+        }))
+      }));
+
+      setShuffledQuizData({
+        ...quizData,
+        questions: shuffledQuestions
+      });
+    }
+  }, [quizStarted, quizData, showResults]);
 
   const handleAnswerSubmit = (selectedOption: number, subAnswers?: { subQuestionId: number; selectedOption: number; isCorrect: boolean; score: number; }[]) => {
-    const currentQuestion = quizData.questions[currentQuestionIndex];
+    const currentQuestion = shuffledQuizData.questions[currentQuestionIndex];
     const isCorrect = currentQuestion.options[selectedOption].is_correct;
     
-    // Calculate score based on question settings or option score
+    // Calculate score with default values if not specified
     let score = 0;
     if (currentQuestion.options[selectedOption].score !== undefined) {
       // Use option-specific score
       score = currentQuestion.options[selectedOption].score;
     } else if (currentQuestion.correct_score !== undefined || currentQuestion.incorrect_score !== undefined) {
       // Use question-level scoring
-      score = isCorrect ? (currentQuestion.correct_score || 1) : (currentQuestion.incorrect_score || 0);
+      score = isCorrect ? (currentQuestion.correct_score || 100) : (currentQuestion.incorrect_score || -50);
     } else {
-      // Default scoring
-      score = isCorrect ? 1 : 0;
+      // Default scoring: +100 for correct, -50 for incorrect
+      score = isCorrect ? 100 : -50;
     }
 
     const newAnswer: UserAnswer = {
@@ -44,7 +74,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
 
     setUserAnswers([...userAnswers, newAnswer]);
 
-    if (currentQuestionIndex < quizData.questions.length - 1) {
+    if (currentQuestionIndex < shuffledQuizData.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setShowResults(true);
@@ -67,7 +97,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
     }
     return answerScore;
   }, 0);
-  const totalQuestions = quizData.questions.length;
+  const totalQuestions = shuffledQuizData.questions.length;
   const progress = ((currentQuestionIndex) / totalQuestions) * 100;
 
   if (!quizStarted) {
@@ -89,6 +119,9 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
             <p className="text-sm text-gray-500">
               Read each question carefully and select the best answer
             </p>
+            <p className="text-sm text-blue-600 mt-2">
+              Questions and answers will be shuffled randomly
+            </p>
           </div>
           <Button 
             onClick={() => setQuizStarted(true)}
@@ -106,7 +139,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
       <ResultsCard
         score={correctAnswers}
         totalQuestions={totalQuestions}
-        quizData={quizData}
+        quizData={shuffledQuizData}
         userAnswers={userAnswers}
         onRestart={restartQuiz}
         totalScore={totalScore}
@@ -131,7 +164,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
       </div>
 
       <QuestionCard
-        question={quizData.questions[currentQuestionIndex]}
+        question={shuffledQuizData.questions[currentQuestionIndex]}
         onAnswerSubmit={handleAnswerSubmit}
       />
     </div>
