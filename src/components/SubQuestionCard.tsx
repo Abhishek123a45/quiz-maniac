@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SubQuestion } from "@/types/quiz";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface SubQuestionCardProps {
@@ -20,11 +21,22 @@ export const SubQuestionCard = ({
   selectedOption,
   onOptionSelect 
 }: SubQuestionCardProps) => {
+  const [localShowExplanation, setLocalShowExplanation] = useState(false);
+
   const handleOptionClick = (index: number) => {
-    if (!showExplanation) {
+    if (!showExplanation && !localShowExplanation) {
       onOptionSelect(index);
     }
   };
+
+  const handleSubmit = () => {
+    if (selectedOption !== null) {
+      setLocalShowExplanation(true);
+      onAnswerSubmit(selectedOption);
+    }
+  };
+
+  const displayExplanation = showExplanation || localShowExplanation;
 
   return (
     <Card className="w-full mt-4 border-l-4 border-l-blue-300">
@@ -43,7 +55,7 @@ export const SubQuestionCard = ({
             <div 
               key={index} 
               className={`flex items-center space-x-3 p-2 rounded-lg border transition-all cursor-pointer ${
-                showExplanation
+                displayExplanation
                   ? option.is_correct
                     ? 'bg-green-50 border-green-400'
                     : selectedOption === index
@@ -58,7 +70,7 @@ export const SubQuestionCard = ({
               <RadioGroupItem 
                 value={index.toString()} 
                 id={`sub-option-${subQuestion.id}-${index}`}
-                disabled={showExplanation}
+                disabled={displayExplanation}
               />
               <Label 
                 htmlFor={`sub-option-${subQuestion.id}-${index}`} 
@@ -66,17 +78,30 @@ export const SubQuestionCard = ({
               >
                 {option.text}
               </Label>
-              {showExplanation && option.is_correct && (
+              {displayExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium text-sm">✓</span>
               )}
-              {showExplanation && selectedOption === index && !option.is_correct && (
+              {displayExplanation && selectedOption === index && !option.is_correct && (
                 <span className="text-red-600 font-medium text-sm">✗</span>
               )}
             </div>
           ))}
         </RadioGroup>
 
-        {showExplanation && (
+        {/* Submit button for sub-question */}
+        {!displayExplanation && (
+          <div className="mt-4">
+            <Button
+              onClick={handleSubmit}
+              disabled={selectedOption === null}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 text-sm"
+            >
+              Submit Sub-question
+            </Button>
+          </div>
+        )}
+
+        {displayExplanation && (
           <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
             <h5 className="font-medium text-blue-900 mb-1 text-sm">Explanation:</h5>
             <p className="text-blue-800 text-sm">{subQuestion.explanation}</p>

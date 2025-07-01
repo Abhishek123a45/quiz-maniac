@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QuizQuestion } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
@@ -15,9 +16,11 @@ interface QuestionCardProps {
 export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [subAnswers, setSubAnswers] = useState<{[key: number]: number}>({});
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showMainExplanation, setShowMainExplanation] = useState(false);
+  const [submittedSubQuestions, setSubmittedSubQuestions] = useState<Set<number>>(new Set());
   const [showAnimation, setShowAnimation] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+  const [mainQuestionSubmitted, setMainQuestionSubmitted] = useState(false);
 
   const playSound = (isCorrect: boolean) => {
     try {
@@ -56,11 +59,12 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
     }
   };
 
-  const handleSubmit = () => {
+  const handleMainSubmit = () => {
     if (selectedOption !== null) {
       const isCorrect = question.options[selectedOption].is_correct;
       setIsCorrectAnswer(isCorrect);
-      setShowExplanation(true);
+      setShowMainExplanation(true);
+      setMainQuestionSubmitted(true);
       setShowAnimation(true);
       
       // Play sound
@@ -71,6 +75,10 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
         setShowAnimation(false);
       }, 2000);
     }
+  };
+
+  const handleSubQuestionSubmit = (subQuestionId: number) => {
+    setSubmittedSubQuestions(prev => new Set([...prev, subQuestionId]));
   };
 
   const handleNextQuestion = () => {
@@ -96,13 +104,15 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       onAnswerSubmit(selectedOption, processedSubAnswers);
       setSelectedOption(null);
       setSubAnswers({});
-      setShowExplanation(false);
+      setShowMainExplanation(false);
+      setSubmittedSubQuestions(new Set());
       setShowAnimation(false);
+      setMainQuestionSubmitted(false);
     }
   };
 
   const handleOptionClick = (index: number) => {
-    if (showExplanation) {
+    if (showMainExplanation) {
       // Play sound for clicking on options after answer is submitted
       const isCorrect = question.options[index].is_correct;
       console.log(`Playing sound for option ${index}, isCorrect: ${isCorrect}`);
@@ -119,8 +129,10 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
     }));
   };
 
-  const allSubQuestionsAnswered = !question.sub_questions || 
-    question.sub_questions.every(subQ => subAnswers[subQ.id] !== undefined);
+  const allSubQuestionsSubmitted = !question.sub_questions || 
+    question.sub_questions.every(subQ => submittedSubQuestions.has(subQ.id));
+
+  const canShowNextButton = mainQuestionSubmitted && allSubQuestionsSubmitted;
 
   return (
     <Card className="w-full relative">
@@ -162,7 +174,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
             <div 
               key={index} 
               className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                showExplanation
+                showMainExplanation
                   ? option.is_correct
                     ? 'bg-green-50 border-green-500'
                     : selectedOption === index
@@ -177,7 +189,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               <RadioGroupItem 
                 value={index.toString()} 
                 id={`option-${index}`}
-                disabled={showExplanation}
+                disabled={showMainExplanation}
               />
               <Label 
                 htmlFor={`option-${index}`} 
@@ -185,15 +197,35 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               >
                 {option.text}
               </Label>
-              {showExplanation && option.is_correct && (
+              {showMainExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium">✓ Correct</span>
               )}
-              {showExplanation && selectedOption === index && !option.is_correct && (
+              {showMainExplanation && selectedOption === index && !option.is_correct && (
                 <span className="text-red-600 font-medium">✗ Incorrect</span>
               )}
             </div>
           ))}
         </RadioGroup>
+
+        {showMainExplanation && (
+          <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+            <h4 className="font-medium text-blue-900 mb-2">Explanation:</h4>
+            <p className="text-blue-800">{question.explanation}</p>
+          </div>
+        )}
+
+        {/* Main question submit button */}
+        {!mainQuestionSubmitted && (
+          <div className="mt-6">
+            <Button
+              onClick={handleMainSubmit}
+              disabled={selectedOption === null}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            >
+              Submit Main Answer
+            </Button>
+          </div>
+        )}
 
         {/* Sub-questions section */}
         {question.sub_questions && question.sub_questions.length > 0 && (
@@ -203,8 +235,8 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               <SubQuestionCard
                 key={subQuestion.id}
                 subQuestion={subQuestion}
-                onAnswerSubmit={() => {}}
-                showExplanation={showExplanation}
+                onAnswerSubmit={() => handleSubQuestionSubmit(subQuestion.id)}
+                showExplanation={submittedSubQuestions.has(subQuestion.id)}
                 selectedOption={subAnswers[subQuestion.id] ?? null}
                 onOptionSelect={(option) => handleSubAnswerSelect(subQuestion.id, option)}
               />
@@ -212,34 +244,17 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           </div>
         )}
 
-        {showExplanation && (
-          <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Explanation:</h4>
-            <p className="text-blue-800">{question.explanation}</p>
-          </div>
-        )}
-
-        <div className="mt-6">
-          {!showExplanation ? (
-            <Button
-              onClick={handleSubmit}
-              disabled={selectedOption === null || !allSubQuestionsAnswered}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            >
-              Submit Answer
-              {question.sub_questions && question.sub_questions.length > 0 && !allSubQuestionsAnswered && (
-                <span className="ml-2 text-sm">(Please answer all sub-questions)</span>
-              )}
-            </Button>
-          ) : (
+        {/* Next question button - only shown when both main and all sub-questions are submitted */}
+        {canShowNextButton && (
+          <div className="mt-6">
             <Button
               onClick={handleNextQuestion}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
             >
               Next Question
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
