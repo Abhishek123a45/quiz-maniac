@@ -51,7 +51,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
     const currentQuestion = shuffledQuizData.questions[currentQuestionIndex];
     const isCorrect = currentQuestion.options[selectedOption].is_correct;
     
-    // Calculate score with default values if not specified
+    // Calculate score with fixed values: +100 for correct, -50 for incorrect
     let score = 0;
     if (currentQuestion.options[selectedOption].score !== undefined) {
       // Use option-specific score
@@ -60,7 +60,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
       // Use question-level scoring
       score = isCorrect ? (currentQuestion.correct_score || 100) : (currentQuestion.incorrect_score || -50);
     } else {
-      // Default scoring: +100 for correct, -50 for incorrect
+      // Fixed scoring: +100 for correct, -50 for incorrect
       score = isCorrect ? 100 : -50;
     }
 

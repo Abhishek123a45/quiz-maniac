@@ -90,7 +90,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           const selectedSubOption = subAnswers[subQ.id];
           const isCorrect = selectedSubOption !== undefined ? subQ.options[selectedSubOption].is_correct : false;
           const score = selectedSubOption !== undefined ? 
-            (subQ.options[selectedSubOption].score || (isCorrect ? 1 : 0)) : 0;
+            (subQ.options[selectedSubOption].score || (isCorrect ? 100 : -50)) : 0;
           
           return {
             subQuestionId: subQ.id,
@@ -137,12 +137,12 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
   return (
     <Card className="w-full relative">
       {showAnimation && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/80 rounded-lg">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20 backdrop-blur-sm">
           <div className={`animate-bounce text-6xl ${isCorrectAnswer ? 'animate-pulse' : ''}`}>
             {isCorrectAnswer ? (
-              <PartyPopper className="w-16 h-16 text-green-500 animate-spin" />
+              <PartyPopper className="w-24 h-24 text-green-500 animate-spin" />
             ) : (
-              <ThumbsDown className="w-16 h-16 text-red-500 animate-pulse" />
+              <ThumbsDown className="w-24 h-24 text-red-500 animate-pulse" />
             )}
           </div>
         </div>
@@ -151,17 +151,6 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       <CardHeader>
         <CardTitle className="text-xl text-gray-800 leading-relaxed">
           {question.question_text}
-          {(question.correct_score || question.incorrect_score) && (
-            <div className="text-sm text-gray-500 mt-2">
-              {question.correct_score && (
-                <span className="text-green-600">+{question.correct_score} pts for correct</span>
-              )}
-              {question.correct_score && question.incorrect_score && <span className="mx-2">•</span>}
-              {question.incorrect_score && (
-                <span className="text-red-600">{question.incorrect_score} pts for incorrect</span>
-              )}
-            </div>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
