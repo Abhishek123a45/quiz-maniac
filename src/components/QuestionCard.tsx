@@ -5,14 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { PartyPopper, ThumbsDown } from "lucide-react";
+import { SubQuestionCard } from "./SubQuestionCard";
 
 interface QuestionCardProps {
   question: QuizQuestion;
-  onAnswerSubmit: (selectedOption: number) => void;
+  onAnswerSubmit: (selectedOption: number, subAnswers?: { subQuestionId: number; selectedOption: number; isCorrect: boolean; score: number; }[]) => void;
 }
 
 export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [subAnswers, setSubAnswers] = useState<{[key: number]: number}>({});
   const [showExplanation, setShowExplanation] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
@@ -73,8 +75,27 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
 
   const handleNextQuestion = () => {
     if (selectedOption !== null) {
-      onAnswerSubmit(selectedOption);
+      // Calculate sub-question answers if they exist
+      let processedSubAnswers;
+      if (question.sub_questions && question.sub_questions.length > 0) {
+        processedSubAnswers = question.sub_questions.map(subQ => {
+          const selectedSubOption = subAnswers[subQ.id];
+          const isCorrect = selectedSubOption !== undefined ? subQ.options[selectedSubOption].is_correct : false;
+          const score = selectedSubOption !== undefined ? 
+            (subQ.options[selectedSubOption].score || (isCorrect ? 1 : 0)) : 0;
+          
+          return {
+            subQuestionId: subQ.id,
+            selectedOption: selectedSubOption || 0,
+            isCorrect,
+            score
+          };
+        });
+      }
+
+      onAnswerSubmit(selectedOption, processedSubAnswers);
       setSelectedOption(null);
+      setSubAnswers({});
       setShowExplanation(false);
       setShowAnimation(false);
     }
@@ -90,6 +111,16 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       setSelectedOption(index);
     }
   };
+
+  const handleSubAnswerSelect = (subQuestionId: number, option: number) => {
+    setSubAnswers(prev => ({
+      ...prev,
+      [subQuestionId]: option
+    }));
+  };
+
+  const allSubQuestionsAnswered = !question.sub_questions || 
+    question.sub_questions.every(subQ => subAnswers[subQ.id] !== undefined);
 
   return (
     <Card className="w-full relative">
@@ -108,6 +139,17 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       <CardHeader>
         <CardTitle className="text-xl text-gray-800 leading-relaxed">
           {question.question_text}
+          {(question.correct_score || question.incorrect_score) && (
+            <div className="text-sm text-gray-500 mt-2">
+              {question.correct_score && (
+                <span className="text-green-600">+{question.correct_score} pts for correct</span>
+              )}
+              {question.correct_score && question.incorrect_score && <span className="mx-2">•</span>}
+              {question.incorrect_score && (
+                <span className="text-red-600">{question.incorrect_score} pts for incorrect</span>
+              )}
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -142,6 +184,11 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
                 className="flex-1 cursor-pointer text-gray-700"
               >
                 {option.text}
+                {option.score && (
+                  <span className="ml-2 text-sm text-blue-600 font-medium">
+                    ({option.score > 0 ? '+' : ''}{option.score} pts)
+                  </span>
+                )}
               </Label>
               {showExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium">✓ Correct</span>
@@ -152,6 +199,23 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
             </div>
           ))}
         </RadioGroup>
+
+        {/* Sub-questions section */}
+        {question.sub_questions && question.sub_questions.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-lg font-medium text-gray-800 mb-3">Sub-questions:</h4>
+            {question.sub_questions.map((subQuestion) => (
+              <SubQuestionCard
+                key={subQuestion.id}
+                subQuestion={subQuestion}
+                onAnswerSubmit={() => {}}
+                showExplanation={showExplanation}
+                selectedOption={subAnswers[subQuestion.id] ?? null}
+                onOptionSelect={(option) => handleSubAnswerSelect(subQuestion.id, option)}
+              />
+            ))}
+          </div>
+        )}
 
         {showExplanation && (
           <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
@@ -164,10 +228,13 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           {!showExplanation ? (
             <Button
               onClick={handleSubmit}
-              disabled={selectedOption === null}
+              disabled={selectedOption === null || !allSubQuestionsAnswered}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
             >
               Submit Answer
+              {question.sub_questions && question.sub_questions.length > 0 && !allSubQuestionsAnswered && (
+                <span className="ml-2 text-sm">(Please answer all sub-questions)</span>
+              )}
             </Button>
           ) : (
             <Button

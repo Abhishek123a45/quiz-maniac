@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuizData } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
@@ -62,6 +61,19 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         const hasCorrectAnswer = q.options.some((opt: any) => opt.is_correct === true);
         if (!hasCorrectAnswer) {
           throw new Error(`Question ${index + 1} must have at least one correct answer`);
+        }
+        
+        // Validate sub-questions if they exist
+        if (q.sub_questions && Array.isArray(q.sub_questions)) {
+          q.sub_questions.forEach((subQ: any, subIndex: number) => {
+            if (!subQ.id || !subQ.question_text || !subQ.options || !subQ.explanation) {
+              throw new Error(`Sub-question ${subIndex + 1} in question ${index + 1} is missing required fields`);
+            }
+            const hasCorrectSubAnswer = subQ.options.some((opt: any) => opt.is_correct === true);
+            if (!hasCorrectSubAnswer) {
+              throw new Error(`Sub-question ${subIndex + 1} in question ${index + 1} must have at least one correct answer`);
+            }
+          });
         }
       });
 
@@ -251,7 +263,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
         </div>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-md">
-          <h4 className="font-medium text-gray-800 mb-2">Expected Quiz JSON Format:</h4>
+          <h4 className="font-medium text-gray-800 mb-2">Expected Quiz JSON Format (with new features):</h4>
           <pre className="text-xs text-gray-600 overflow-x-auto">
 {`{
   "quiz_title": "Your Quiz Title",
@@ -261,16 +273,38 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
       "id": 1,
       "question_text": "Your question?",
       "options": [
-        {"text": "Option A", "is_correct": false},
-        {"text": "Option B", "is_correct": true}
+        {"text": "Option A", "is_correct": false, "score": -1},
+        {"text": "Option B", "is_correct": true, "score": 2}
       ],
       "explanation": "Explanation text",
       "citations": "",
-      "concept_id": 1
+      "concept_id": 1,
+      "correct_score": 2,
+      "incorrect_score": -1,
+      "sub_questions": [
+        {
+          "id": 1,
+          "question_text": "Sub-question?",
+          "options": [
+            {"text": "Sub Option A", "is_correct": true, "score": 1}
+          ],
+          "explanation": "Sub explanation"
+        }
+      ]
     }
   ]
 }`}
           </pre>
+        </div>
+
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <h4 className="font-medium text-blue-800 mb-2">New Features:</h4>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• <strong>Dynamic Scoring:</strong> Add "score" to options, or "correct_score"/"incorrect_score" to questions</li>
+            <li>• <strong>Sub-questions:</strong> Add "sub_questions" array to any question for follow-up questions</li>
+            <li>• <strong>Flexible Points:</strong> Options and questions can have custom point values (positive or negative)</li>
+            <li>• <strong>Enhanced Analytics:</strong> Score tracking includes sub-question performance</li>
+          </ul>
         </div>
 
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">

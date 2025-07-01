@@ -17,14 +17,29 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
   const [showResults, setShowResults] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
 
-  const handleAnswerSubmit = (selectedOption: number) => {
+  const handleAnswerSubmit = (selectedOption: number, subAnswers?: { subQuestionId: number; selectedOption: number; isCorrect: boolean; score: number; }[]) => {
     const currentQuestion = quizData.questions[currentQuestionIndex];
     const isCorrect = currentQuestion.options[selectedOption].is_correct;
     
+    // Calculate score based on question settings or option score
+    let score = 0;
+    if (currentQuestion.options[selectedOption].score !== undefined) {
+      // Use option-specific score
+      score = currentQuestion.options[selectedOption].score;
+    } else if (currentQuestion.correct_score !== undefined || currentQuestion.incorrect_score !== undefined) {
+      // Use question-level scoring
+      score = isCorrect ? (currentQuestion.correct_score || 1) : (currentQuestion.incorrect_score || 0);
+    } else {
+      // Default scoring
+      score = isCorrect ? 1 : 0;
+    }
+
     const newAnswer: UserAnswer = {
       questionId: currentQuestion.id,
       selectedOption,
       isCorrect,
+      score,
+      subAnswers
     };
 
     setUserAnswers([...userAnswers, newAnswer]);
@@ -43,7 +58,15 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
     setQuizStarted(false);
   };
 
-  const score = userAnswers.filter(answer => answer.isCorrect).length;
+  const correctAnswers = userAnswers.filter(answer => answer.isCorrect).length;
+  const totalScore = userAnswers.reduce((sum, answer) => {
+    let answerScore = sum + answer.score;
+    // Add sub-question scores if they exist
+    if (answer.subAnswers) {
+      answerScore += answer.subAnswers.reduce((subSum, subAnswer) => subSum + subAnswer.score, 0);
+    }
+    return answerScore;
+  }, 0);
   const totalQuestions = quizData.questions.length;
   const progress = ((currentQuestionIndex) / totalQuestions) * 100;
 
@@ -81,11 +104,12 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
   if (showResults) {
     return (
       <ResultsCard
-        score={score}
+        score={correctAnswers}
         totalQuestions={totalQuestions}
         quizData={quizData}
         userAnswers={userAnswers}
         onRestart={restartQuiz}
+        totalScore={totalScore}
       />
     );
   }
@@ -98,6 +122,12 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
           currentQuestion={currentQuestionIndex + 1}
           totalQuestions={totalQuestions}
         />
+        {/* Show current score */}
+        <div className="text-center mt-2">
+          <span className="text-sm text-gray-600">
+            Current Score: <span className="font-semibold text-blue-600">{totalScore}</span> points
+          </span>
+        </div>
       </div>
 
       <QuestionCard
