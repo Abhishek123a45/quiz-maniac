@@ -184,11 +184,6 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
                 className="flex-1 cursor-pointer text-gray-700"
               >
                 {option.text}
-                {option.score && (
-                  <span className="ml-2 text-sm text-blue-600 font-medium">
-                    ({option.score > 0 ? '+' : ''}{option.score} pts)
-                  </span>
-                )}
               </Label>
               {showExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium">✓ Correct</span>
