@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
@@ -67,12 +68,16 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
     if (currentConcept.questions && currentConcept.questions.length > 0) {
       setCurrentStage('questions');
       setCurrentQuestionIndex(0);
+      setShowQuestionResult(false);
+      setSelectedOption(null);
     } else {
       // Skip to sub-explanations or next concept if no questions
       if (currentConcept.sub_explanations && currentConcept.sub_explanations.length > 0) {
         setCurrentStage('sub-explanations');
         setCurrentSubExplanationIndex(0);
         setCurrentQuestionIndex(0);
+        setShowQuestionResult(false);
+        setSelectedOption(null);
       } else {
         moveToNextConcept();
       }
@@ -130,7 +135,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
       }
     } else if (currentStage === 'sub-explanations') {
       const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
-      if (currentQuestionIndex < (currentSubExp.questions?.length || 0) - 1) {
+      if (currentSubExp.questions && currentQuestionIndex < currentSubExp.questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedOption(null);
         setShowQuestionResult(false);
@@ -239,8 +244,8 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
   if (currentStage === 'sub-explanations') {
     const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
     
-    if (currentQuestionIndex === 0 && !showQuestionResult && (!currentSubExp.questions || currentSubExp.questions.length === 0)) {
-      // Show sub-explanation without questions
+    // Show sub-explanation first, then questions if they exist
+    if (currentQuestionIndex === 0 && !showQuestionResult) {
       return (
         <Card className="w-full max-w-4xl mx-auto">
           <CardHeader className="text-center">
@@ -258,40 +263,20 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
             </div>
             <div className="text-center">
               <Button 
-                onClick={handleNextQuestion}
+                onClick={() => {
+                  if (currentSubExp.questions && currentSubExp.questions.length > 0) {
+                    // Start questions for this sub-explanation
+                    setShowQuestionResult(false);
+                  } else {
+                    // No questions, move to next sub-explanation or next concept
+                    handleNextQuestion();
+                  }
+                }}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
               >
-                Continue
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-    
-    if (currentQuestionIndex === 0 && !showQuestionResult && currentSubExp.questions && currentSubExp.questions.length > 0) {
-      // Show sub-explanation with questions
-      return (
-        <Card className="w-full max-w-4xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl font-bold text-purple-900">
-              {currentSubExp.title}
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
-              Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-              <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
-              <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
-            </div>
-            <div className="text-center">
-              <Button 
-                onClick={() => setShowQuestionResult(false)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-              >
-                Continue to Questions
+                {(currentSubExp.questions && currentSubExp.questions.length > 0) 
+                  ? "Continue to Questions" 
+                  : "Continue"}
               </Button>
             </div>
           </CardContent>

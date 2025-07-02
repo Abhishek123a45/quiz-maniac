@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Trash2, Play, Calendar, Folder, Search, Edit, LogIn, Move, Home, FolderOpen } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Play, Calendar, Folder, Search, Edit, LogIn, Move, Home, FolderOpen, Brain } from "lucide-react";
 import { useQuizzes } from "@/hooks/useQuizzes";
 import { useFolders, Folder as FolderType, FolderWithChildren } from "@/hooks/useFolders";
 import { QuizData } from "@/types/quiz";
@@ -249,9 +250,17 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                 {filteredQuizzes.map((quiz) => (
                   <Card key={quiz.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle className="text-lg text-blue-900 line-clamp-2">
-                        {quiz.quiz_title}
-                      </CardTitle>
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg text-blue-900 line-clamp-2 flex-1">
+                          {quiz.quiz_title}
+                        </CardTitle>
+                        {quiz.quiz_type === 'concept' && (
+                          <Badge variant="secondary" className="ml-2 bg-purple-100 text-purple-700 border-purple-200">
+                            <Brain className="w-3 h-3 mr-1" />
+                            Concept
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex items-center text-sm text-gray-500 mt-2">
                         <Calendar className="w-4 h-4 mr-1" />
                         {new Date(quiz.created_at).toLocaleDateString()}
@@ -262,7 +271,10 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                         {quiz.description}
                       </p>
                       <div className="text-sm text-gray-500 mb-4">
-                        {quiz.questions.length} question{quiz.questions.length !== 1 ? 's' : ''}
+                        {quiz.quiz_type === 'concept' 
+                          ? `${quiz.questions[0]?.concept_data?.concepts?.length || 0} concept${(quiz.questions[0]?.concept_data?.concepts?.length || 0) !== 1 ? 's' : ''}`
+                          : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
+                        }
                       </div>
                       <div className="flex gap-2">
                         <Button
