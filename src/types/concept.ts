@@ -12,14 +12,14 @@ export interface ConceptQuestion {
 export interface SubExplanation {
   title: string;
   explanation: string;
-  questions: ConceptQuestion[];
+  questions?: ConceptQuestion[]; // Made optional
 }
 
 export interface Concept {
   name: string;
   explanation: string;
-  questions: ConceptQuestion[];
-  sub_explanations: SubExplanation[];
+  questions?: ConceptQuestion[]; // Made optional
+  sub_explanations?: SubExplanation[];
 }
 
 export interface ConceptData {

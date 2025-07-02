@@ -42,45 +42,55 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
 
       // Validate each concept
       parsedData.concepts.forEach((concept: any, index: number) => {
-        if (!concept.name || !concept.explanation || !concept.questions) {
-          throw new Error(`Concept ${index + 1} is missing required fields: name, explanation, or questions`);
+        if (!concept.name || !concept.explanation) {
+          throw new Error(`Concept ${index + 1} is missing required fields: name or explanation`);
         }
         
-        if (!Array.isArray(concept.questions) || concept.questions.length === 0) {
-          throw new Error(`Concept ${index + 1} must have questions array`);
-        }
+        // Questions are now optional, but if they exist, validate them
+        if (concept.questions) {
+          if (!Array.isArray(concept.questions)) {
+            throw new Error(`Concept ${index + 1} questions must be an array`);
+          }
 
-        // Validate concept questions
-        concept.questions.forEach((q: any, qIndex: number) => {
-          if (!q.question_text || !q.options) {
-            throw new Error(`Question ${qIndex + 1} in concept ${index + 1} is missing required fields`);
-          }
-          if (!Array.isArray(q.options) || q.options.length === 0) {
-            throw new Error(`Question ${qIndex + 1} in concept ${index + 1} must have options array`);
-          }
-          const hasCorrectAnswer = q.options.some((opt: any) => opt.is_correct === true);
-          if (!hasCorrectAnswer) {
-            throw new Error(`Question ${qIndex + 1} in concept ${index + 1} must have at least one correct answer`);
-          }
-        });
+          // Validate concept questions if they exist
+          concept.questions.forEach((q: any, qIndex: number) => {
+            if (!q.question_text || !q.options) {
+              throw new Error(`Question ${qIndex + 1} in concept ${index + 1} is missing required fields`);
+            }
+            if (!Array.isArray(q.options) || q.options.length === 0) {
+              throw new Error(`Question ${qIndex + 1} in concept ${index + 1} must have options array`);
+            }
+            const hasCorrectAnswer = q.options.some((opt: any) => opt.is_correct === true);
+            if (!hasCorrectAnswer) {
+              throw new Error(`Question ${qIndex + 1} in concept ${index + 1} must have at least one correct answer`);
+            }
+          });
+        }
 
         // Validate sub-explanations if they exist
         if (concept.sub_explanations && Array.isArray(concept.sub_explanations)) {
           concept.sub_explanations.forEach((subExp: any, subIndex: number) => {
-            if (!subExp.title || !subExp.explanation || !subExp.questions) {
-              throw new Error(`Sub-explanation ${subIndex + 1} in concept ${index + 1} is missing required fields`);
+            if (!subExp.title || !subExp.explanation) {
+              throw new Error(`Sub-explanation ${subIndex + 1} in concept ${index + 1} is missing required fields: title or explanation`);
             }
             
-            // Validate sub-explanation questions
-            subExp.questions.forEach((q: any, qIndex: number) => {
-              if (!q.question_text || !q.options) {
-                throw new Error(`Question ${qIndex + 1} in sub-explanation ${subIndex + 1} of concept ${index + 1} is missing required fields`);
+            // Questions are optional for sub-explanations too
+            if (subExp.questions) {
+              if (!Array.isArray(subExp.questions)) {
+                throw new Error(`Sub-explanation ${subIndex + 1} in concept ${index + 1} questions must be an array`);
               }
-              const hasCorrectAnswer = q.options.some((opt: any) => opt.is_correct === true);
-              if (!hasCorrectAnswer) {
-                throw new Error(`Question ${qIndex + 1} in sub-explanation ${subIndex + 1} of concept ${index + 1} must have at least one correct answer`);
-              }
-            });
+
+              // Validate sub-explanation questions if they exist
+              subExp.questions.forEach((q: any, qIndex: number) => {
+                if (!q.question_text || !q.options) {
+                  throw new Error(`Question ${qIndex + 1} in sub-explanation ${subIndex + 1} of concept ${index + 1} is missing required fields`);
+                }
+                const hasCorrectAnswer = q.options.some((opt: any) => opt.is_correct === true);
+                if (!hasCorrectAnswer) {
+                  throw new Error(`Question ${qIndex + 1} in sub-explanation ${subIndex + 1} of concept ${index + 1} must have at least one correct answer`);
+                }
+              });
+            }
           });
         }
       });
@@ -196,8 +206,8 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
             <p className="text-green-600 text-xs mt-1">
               Found {validatedConceptData.concepts.length} concept(s) with {
                 validatedConceptData.concepts.reduce((total, concept) => 
-                  total + concept.questions.length + 
-                  (concept.sub_explanations?.reduce((subTotal, subExp) => subTotal + subExp.questions.length, 0) || 0), 0
+                  total + (concept.questions?.length || 0) + 
+                  (concept.sub_explanations?.reduce((subTotal, subExp) => subTotal + (subExp.questions?.length || 0), 0) || 0), 0
                 )
               } total questions
             </p>
@@ -248,7 +258,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
     {
       "name": "Concept Name",
       "explanation": "Detailed explanation of the concept",
-      "questions": [
+      "questions": [ // Optional
         {
           "question_text": "Your question?",
           "options": [
@@ -261,7 +271,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
         {
           "title": "Sub-topic Title",
           "explanation": "Sub-topic explanation",
-          "questions": [
+          "questions": [ // Optional
             {
               "question_text": "Sub-topic question?",
               "options": [
