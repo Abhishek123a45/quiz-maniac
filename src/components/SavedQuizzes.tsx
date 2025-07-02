@@ -139,6 +139,19 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
     });
   };
 
+  // Helper function to get concept count for concept quizzes
+  const getConceptCount = (quiz: any) => {
+    if (quiz.quiz_type === 'concept' && quiz.questions && quiz.questions.length > 0) {
+      // For concept quizzes, the concept data is stored in the first question
+      const firstQuestion = quiz.questions[0];
+      if (firstQuestion && typeof firstQuestion === 'object' && 'concept_data' in firstQuestion) {
+        const conceptData = firstQuestion.concept_data as any;
+        return conceptData?.concepts?.length || 0;
+      }
+    }
+    return 0;
+  };
+
   if (quizzesLoading || foldersLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
@@ -272,7 +285,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                       </p>
                       <div className="text-sm text-gray-500 mb-4">
                         {quiz.quiz_type === 'concept' 
-                          ? `${quiz.questions[0]?.concept_data?.concepts?.length || 0} concept${(quiz.questions[0]?.concept_data?.concepts?.length || 0) !== 1 ? 's' : ''}`
+                          ? `${getConceptCount(quiz)} concept${getConceptCount(quiz) !== 1 ? 's' : ''}`
                           : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
                         }
                       </div>
