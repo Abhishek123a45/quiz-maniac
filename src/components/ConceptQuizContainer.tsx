@@ -16,7 +16,7 @@ interface ConceptQuizContainerProps {
 
 export const ConceptQuizContainer = ({ conceptData, title, description }: ConceptQuizContainerProps) => {
   const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
-  const [currentStage, setCurrentStage] = useState<'explanation' | 'questions' | 'sub-explanations' | 'results'>('explanation');
+  const [currentStage, setCurrentStage] = useState<'explanation' | 'questions' | 'sub-explanations' | 'sub-questions' | 'results'>('explanation');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentSubExplanationIndex, setCurrentSubExplanationIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -24,6 +24,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
   const [showQuestionResult, setShowQuestionResult] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+  const [showSubExplanation, setShowSubExplanation] = useState(true);
 
   const currentConcept = conceptData.concepts[currentConceptIndex];
   const totalConcepts = conceptData.concepts.length;
@@ -78,6 +79,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
         setCurrentQuestionIndex(0);
         setShowQuestionResult(false);
         setSelectedOption(null);
+        setShowSubExplanation(true);
       } else {
         moveToNextConcept();
       }
@@ -99,8 +101,8 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
       selectedOption,
       isCorrect,
       score,
-      isSubExplanation: currentStage === 'sub-explanations',
-      subExplanationIndex: currentStage === 'sub-explanations' ? currentSubExplanationIndex : undefined
+      isSubExplanation: currentStage === 'sub-questions',
+      subExplanationIndex: currentStage === 'sub-questions' ? currentSubExplanationIndex : undefined
     };
 
     setUserAnswers([...userAnswers, answer]);
@@ -129,11 +131,12 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
           setCurrentQuestionIndex(0);
           setSelectedOption(null);
           setShowQuestionResult(false);
+          setShowSubExplanation(true);
         } else {
           moveToNextConcept();
         }
       }
-    } else if (currentStage === 'sub-explanations') {
+    } else if (currentStage === 'sub-questions') {
       const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
       if (currentSubExp.questions && currentQuestionIndex < currentSubExp.questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -144,6 +147,8 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
         setCurrentQuestionIndex(0);
         setSelectedOption(null);
         setShowQuestionResult(false);
+        setShowSubExplanation(true);
+        setCurrentStage('sub-explanations');
       } else {
         moveToNextConcept();
       }
@@ -158,8 +163,28 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
       setCurrentSubExplanationIndex(0);
       setSelectedOption(null);
       setShowQuestionResult(false);
+      setShowSubExplanation(true);
     } else {
       setCurrentStage('results');
+    }
+  };
+
+  const handleContinueToSubQuestions = () => {
+    const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
+    if (currentSubExp.questions && currentSubExp.questions.length > 0) {
+      setCurrentStage('sub-questions');
+      setCurrentQuestionIndex(0);
+      setShowQuestionResult(false);
+      setSelectedOption(null);
+      setShowSubExplanation(false);
+    } else {
+      // No questions, move to next sub-explanation or concept
+      if (currentSubExplanationIndex < currentConcept.sub_explanations!.length - 1) {
+        setCurrentSubExplanationIndex(currentSubExplanationIndex + 1);
+        setShowSubExplanation(true);
+      } else {
+        moveToNextConcept();
+      }
     }
   };
 
@@ -171,6 +196,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
     setSelectedOption(null);
     setUserAnswers([]);
     setShowQuestionResult(false);
+    setShowSubExplanation(true);
   };
 
   const correctAnswers = userAnswers.filter(answer => answer.isCorrect).length;
@@ -241,48 +267,37 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
     );
   }
 
-  if (currentStage === 'sub-explanations') {
+  if (currentStage === 'sub-explanations' && showSubExplanation) {
     const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
     
-    // Show sub-explanation first, then questions if they exist
-    if (currentQuestionIndex === 0 && !showQuestionResult) {
-      return (
-        <Card className="w-full max-w-4xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl font-bold text-purple-900">
-              {currentSubExp.title}
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
-              Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-              <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
-              <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
-            </div>
-            <div className="text-center">
-              <Button 
-                onClick={() => {
-                  if (currentSubExp.questions && currentSubExp.questions.length > 0) {
-                    // Start questions for this sub-explanation
-                    setShowQuestionResult(false);
-                  } else {
-                    // No questions, move to next sub-explanation or next concept
-                    handleNextQuestion();
-                  }
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-              >
-                {(currentSubExp.questions && currentSubExp.questions.length > 0) 
-                  ? "Continue to Questions" 
-                  : "Continue"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl font-bold text-purple-900">
+            {currentSubExp.title}
+          </CardTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+            <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
+            <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
+          </div>
+          <div className="text-center">
+            <Button 
+              onClick={handleContinueToSubQuestions}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+            >
+              {(currentSubExp.questions && currentSubExp.questions.length > 0) 
+                ? "Continue to Questions" 
+                : "Continue"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Question display logic - only show if questions exist

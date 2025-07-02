@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ConceptData } from "@/types/concept";
 import { Button } from "@/components/ui/button";
@@ -138,9 +137,18 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-purple-900">
-          Create Concept Builder Quiz
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-2xl font-bold text-purple-900">
+            Create Concept Builder Quiz
+          </CardTitle>
+          <Button
+            onClick={onCancel}
+            variant="outline"
+            disabled={isLoading || isSaving}
+          >
+            ← Back to Home
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -240,14 +248,6 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
               </Button>
             </>
           )}
-          
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            disabled={isLoading || isSaving}
-          >
-            Cancel
-          </Button>
         </div>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-md">
