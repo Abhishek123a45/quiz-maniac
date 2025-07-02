@@ -1,10 +1,9 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizData } from '@/types/quiz';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-
-
 
 interface SavedQuiz {
   id: string;
@@ -15,6 +14,7 @@ interface SavedQuiz {
   updated_at: string;
   folder_id: string | null;
   user_id: string | null;
+  quiz_type: 'regular' | 'concept';
 }
 
 export const useQuizzes = (folderId?: string | null) => {
@@ -29,26 +29,21 @@ export const useQuizzes = (folderId?: string | null) => {
 
   // Fetch quizzes (optionally filtered by folder)
   const { data: quizzes, isLoading, error } = useQuery({
-    queryKey: ['quizzes', effectiveFolderId, user?.id], // Use effectiveFolderId in queryKey
+    queryKey: ['quizzes', effectiveFolderId, user?.id],
     queryFn: async (): Promise<SavedQuiz[]> => {
       let query = supabase
         .from('quizzes')
         .select('*')
         .order('created_at', { ascending: false });
 
-      
-
       // Filter by folder if specified
-      // ==changes===
-      if (effectiveFolderId !== undefined) { // Use effectiveFolderId for the query
+      if (effectiveFolderId !== undefined) {
         if (effectiveFolderId === null) {
-          query = query.is('folder_id', null); // Explicitly query for NULL values
+          query = query.is('folder_id', null);
         } else {
-          query = query.eq('folder_id', effectiveFolderId); // Query for a specific UUID string
+          query = query.eq('folder_id', effectiveFolderId);
         }
       }
-
-      
 
       const { data, error } = await query;
       if (error) {
@@ -70,10 +65,10 @@ export const useQuizzes = (folderId?: string | null) => {
     enabled: true,
   });
 
-  // Save quiz mutation (updated to include user_id)
+  // Save quiz mutation (updated to include quiz_type)
   const saveQuizMutation = useMutation({
-    mutationFn: async (quizData: QuizData & { folderId?: string }) => {
-      const { folderId, ...quiz } = quizData;
+    mutationFn: async (quizData: (QuizData | any) & { folderId?: string; quiz_type?: 'regular' | 'concept' }) => {
+      const { folderId, quiz_type = 'regular', ...quiz } = quizData;
       const { data, error } = await supabase
         .from('quizzes')
         .insert({
@@ -82,6 +77,7 @@ export const useQuizzes = (folderId?: string | null) => {
           questions: JSON.stringify(quiz.questions),
           folder_id: folderId || null,
           user_id: user?.id || null,
+          quiz_type: quiz_type,
         })
         .select()
         .single();
@@ -124,27 +120,18 @@ export const useQuizzes = (folderId?: string | null) => {
       if (error) throw error;
       return { quizId, folderId };
     },
-    // Optimistic update for a smoother UX
     onMutate: async ({ quizId }) => {
-      // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['quizzes', effectiveFolderId, user?.id] });
-
-      // Snapshot the previous value
       const previousQuizzes = queryClient.getQueryData<SavedQuiz[]>(['quizzes', effectiveFolderId, user?.id]);
-
-      // Optimistically remove the quiz from the current list
       if (previousQuizzes) {
         queryClient.setQueryData(
           ['quizzes', effectiveFolderId, user?.id],
           previousQuizzes.filter(quiz => quiz.id !== quizId)
         );
       }
-
-      // Return a context object with the snapshotted value
       return { previousQuizzes };
     },
     onError: (err, variables, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousQuizzes) {
         queryClient.setQueryData(['quizzes', effectiveFolderId, user?.id], context.previousQuizzes);
       }
@@ -155,10 +142,8 @@ export const useQuizzes = (folderId?: string | null) => {
       });
     },
     onSettled: () => {
-      // Invalidate all quiz queries to ensure data consistency after the mutation is complete
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
     },
-    
   });
 
   // Delete quiz mutation

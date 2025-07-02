@@ -2,11 +2,14 @@
 import { useState } from "react";
 import { QuizContainer } from "@/components/QuizContainer";
 import { QuizCreator } from "@/components/QuizCreator";
+import { ConceptBuilder } from "@/components/ConceptBuilder";
+import { ConceptQuizContainer } from "@/components/ConceptQuizContainer";
 import { SavedQuizzes } from "@/components/SavedQuizzes";
 import { QuizData } from "@/types/quiz";
+import { ConceptData } from "@/types/concept";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus, BookOpen, Brain } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -117,22 +120,44 @@ export default function Index() {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create' | 'saved'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create' | 'saved' | 'concept-builder' | 'concept-quiz'>('home');
   const [customQuizData, setCustomQuizData] = useState<QuizData | null>(null);
+  const [conceptQuizData, setConceptQuizData] = useState<{
+    conceptData: ConceptData;
+    title: string;
+    description: string;
+  } | null>(null);
 
   const handleCreateCustomQuiz = (quizData: QuizData) => {
     setCustomQuizData(quizData);
     setCurrentView('sample');
   };
 
+  const handleCreateConceptQuiz = (conceptData: ConceptData, title: string, description: string) => {
+    setConceptQuizData({ conceptData, title, description });
+    setCurrentView('concept-quiz');
+  };
+
   const handleSelectSavedQuiz = (quizData: QuizData) => {
-    setCustomQuizData(quizData);
-    setCurrentView('sample');
+    // Check if it's a concept quiz
+    if (quizData.questions.length > 0 && (quizData.questions[0] as any).concept_data) {
+      const conceptData = (quizData.questions[0] as any).concept_data;
+      setConceptQuizData({
+        conceptData,
+        title: quizData.quiz_title,
+        description: quizData.description
+      });
+      setCurrentView('concept-quiz');
+    } else {
+      setCustomQuizData(quizData);
+      setCurrentView('sample');
+    }
   };
 
   const handleBackToHome = () => {
     setCurrentView('home');
     setCustomQuizData(null);
+    setConceptQuizData(null);
   };
 
   if (currentView === 'create') {
@@ -148,12 +173,50 @@ export default function Index() {
     );
   }
 
+  if (currentView === 'concept-builder') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-8 px-4">
+        <div className="container mx-auto">
+          <ConceptBuilder 
+            onConceptCreate={handleCreateConceptQuiz}
+            onCancel={handleBackToHome}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (currentView === 'saved') {
     return (
       <SavedQuizzes 
         onQuizSelect={handleSelectSavedQuiz}
         onBack={handleBackToHome}
       />
+    );
+  }
+
+  if (currentView === 'concept-quiz') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-8 px-4">
+        <div className="container mx-auto">
+          <div className="mb-4">
+            <Button
+              onClick={handleBackToHome}
+              variant="outline"
+              className="mb-4"
+            >
+              ← Back to Home
+            </Button>
+          </div>
+          {conceptQuizData && (
+            <ConceptQuizContainer 
+              conceptData={conceptQuizData.conceptData}
+              title={conceptQuizData.title}
+              description={conceptQuizData.description}
+            />
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -191,7 +254,7 @@ export default function Index() {
               </p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="p-6 hover:shadow-lg transition-shadow">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">
                     Try Sample Quiz
@@ -223,6 +286,22 @@ export default function Index() {
                   </Button>
                 </Card>
 
+                <Card className="p-6 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                  <h3 className="text-xl font-semibold text-purple-800 mb-3">
+                    Concept Builder
+                  </h3>
+                  <p className="text-purple-600 mb-4">
+                    Create concept-based quizzes with explanations and structured learning
+                  </p>
+                  <Button
+                    onClick={() => setCurrentView('concept-builder')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                  >
+                    <Brain className="w-4 h-4 mr-2" />
+                    Build Concepts
+                  </Button>
+                </Card>
+
                 <Card className="p-6 hover:shadow-lg transition-shadow">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">
                     Saved Quizzes
@@ -232,7 +311,7 @@ export default function Index() {
                   </p>
                   <Button
                     onClick={() => setCurrentView('saved')}
-                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                    className="bg-orange-600 hover:bg-orange-700 text-white w-full"
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
                     View Saved Quizzes
@@ -247,6 +326,7 @@ export default function Index() {
                   <li>• Instant feedback with explanations</li>
                   <li>• Progress tracking and final results</li>
                   <li>• Custom quiz creation from JSON data</li>
+                  <li>• <span className="font-semibold text-purple-700">NEW: Concept Builder</span> - Create structured learning experiences</li>
                   <li>• Save and manage your quiz collection</li>
                 </ul>
               </div>

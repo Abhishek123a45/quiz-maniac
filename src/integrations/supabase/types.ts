@@ -55,6 +55,7 @@ export type Database = {
           id: string
           questions: Json
           quiz_title: string
+          quiz_type: string | null
           updated_at: string
           user_id: string | null
         }
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           questions: Json
           quiz_title: string
+          quiz_type?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -75,6 +77,7 @@ export type Database = {
           id?: string
           questions?: Json
           quiz_title?: string
+          quiz_type?: string | null
           updated_at?: string
           user_id?: string | null
         }
