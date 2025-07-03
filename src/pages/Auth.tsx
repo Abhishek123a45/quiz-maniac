@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const redirectUrl = `${window.location.origin}/`;
 
@@ -62,10 +63,13 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-2">
-      <Card className="max-w-md w-full">
+    <div className="flex min-h-screen items-center justify-center bg-background px-2">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <Card className="max-w-md w-full bg-card text-card-foreground border-border">
         <CardHeader>
-          <CardTitle className="text-center">{mode === "login" ? "Log In" : "Sign Up"}</CardTitle>
+          <CardTitle className="text-center text-foreground">{mode === "login" ? "Log In" : "Sign Up"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -76,6 +80,7 @@ export default function AuthPage() {
               value={email}
               disabled={pending}
               onChange={(e) => setEmail(e.target.value)}
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
             <Input
               type="password"
@@ -84,8 +89,9 @@ export default function AuthPage() {
               value={password}
               disabled={pending}
               onChange={(e) => setPassword(e.target.value)}
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
-            {error && <div className="text-red-600 text-sm text-center">{error}</div>}
+            {error && <div className="text-destructive text-sm text-center">{error}</div>}
             <Button type="submit" disabled={pending}>
               {pending
                 ? mode === "login"
@@ -101,7 +107,7 @@ export default function AuthPage() {
               <>
                 New to QuizGame?{" "}
                 <button
-                  className="text-blue-700 underline hover:text-blue-900"
+                  className="text-primary underline hover:text-primary/80"
                   onClick={switchMode}
                   disabled={pending}
                   type="button"
@@ -113,7 +119,7 @@ export default function AuthPage() {
               <>
                 Already have an account?{" "}
                 <button
-                  className="text-blue-700 underline hover:text-blue-900"
+                  className="text-primary underline hover:text-primary/80"
                   onClick={switchMode}
                   disabled={pending}
                   type="button"

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QuizContainer } from "@/components/QuizContainer";
 import { QuizCreator } from "@/components/QuizCreator";
@@ -12,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, BookOpen, Brain } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const sampleQuizData: QuizData = {
   "quiz_title": "Understanding a Quadratic Equation with Complex Coefficients",
@@ -162,7 +162,7 @@ export default function Index() {
 
   if (currentView === 'create') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4">
         <div className="container mx-auto">
           <QuizCreator 
             onQuizCreate={handleCreateCustomQuiz}
@@ -175,7 +175,7 @@ export default function Index() {
 
   if (currentView === 'concept-builder') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4">
         <div className="container mx-auto">
           <ConceptBuilder 
             onConceptCreate={handleCreateConceptQuiz}
@@ -197,7 +197,7 @@ export default function Index() {
 
   if (currentView === 'concept-quiz') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4">
         <div className="container mx-auto">
           <div className="mb-4">
             <Button
@@ -222,7 +222,7 @@ export default function Index() {
 
   if (currentView === 'sample') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4">
         <div className="container mx-auto">
           <div className="mb-4">
             <Button
@@ -241,77 +241,80 @@ export default function Index() {
 
   return (
     <main>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4">
         <div className="container mx-auto">
-          <Card className="w-full max-w-4xl mx-auto">
+          <Card className="w-full max-w-4xl mx-auto bg-card text-card-foreground">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center text-4xl font-bold text-red-400 mb-4">
+              <CardTitle className="flex items-center justify-center text-4xl font-bold text-primary mb-4">
                 <span>Quizified</span>
                 <img className="h-20" src="/logo.png"/>
               </CardTitle>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-muted-foreground">
                 Create and take interactive quizzes with detailed explanations
               </p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="p-6 hover:shadow-lg transition-shadow">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
+                  <h3 className="text-xl font-semibold text-foreground mb-3">
                     Try Sample Quiz
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Experience our quiz with a sample about quadratic equations with complex coefficients
                   </p>
                   <Button
                     onClick={() => setCurrentView('sample')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                    className="w-full"
                   >
                     Start Sample Quiz
                   </Button>
                 </Card>
 
-                <Card className="p-6 hover:shadow-lg transition-shadow">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
+                  <h3 className="text-xl font-semibold text-foreground mb-3">
                     Create Custom Quiz
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Input your own quiz data in JSON format and create a personalized quiz
                   </p>
                   <Button
                     onClick={() => setCurrentView('create')}
-                    className="bg-green-600 hover:bg-green-700 text-white w-full"
+                    className="w-full"
+                    variant="secondary"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create New Quiz
                   </Button>
                 </Card>
 
-                <Card className="p-6 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-                  <h3 className="text-xl font-semibold text-purple-800 mb-3">
+                <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
+                  <h3 className="text-xl font-semibold text-foreground mb-3">
                     Concept Builder
                   </h3>
-                  <p className="text-purple-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Create concept-based quizzes with explanations and structured learning
                   </p>
                   <Button
                     onClick={() => setCurrentView('concept-builder')}
-                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                    className="w-full"
+                    variant="outline"
                   >
                     <Brain className="w-4 h-4 mr-2" />
                     Build Concepts
                   </Button>
                 </Card>
 
-                <Card className="p-6 hover:shadow-lg transition-shadow">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
+                  <h3 className="text-xl font-semibold text-foreground mb-3">
                     Saved Quizzes
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Access your previously saved quizzes and play them anytime
                   </p>
                   <Button
                     onClick={() => setCurrentView('saved')}
-                    className="bg-orange-600 hover:bg-orange-700 text-white w-full"
+                    className="w-full"
+                    variant="destructive"
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
                     View Saved Quizzes
@@ -319,14 +322,14 @@ export default function Index() {
                 </Card>
               </div>
 
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Features:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="mt-8 p-4 bg-muted rounded-lg border border-border">
+                <h4 className="font-medium text-foreground mb-2">Features:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Interactive multiple-choice questions</li>
                   <li>• Instant feedback with explanations</li>
                   <li>• Progress tracking and final results</li>
                   <li>• Custom quiz creation from JSON data</li>
-                  <li>• <span className="font-semibold text-purple-700">NEW: Concept Builder</span> - Create structured learning experiences</li>
+                  <li>• <span className="font-semibold text-primary">NEW: Concept Builder</span> - Create structured learning experiences</li>
                   <li>• Save and manage your quiz collection</li>
                 </ul>
               </div>
@@ -335,6 +338,7 @@ export default function Index() {
         </div>
       </div>
       <div className="flex items-center gap-2 absolute top-4 right-4">
+        <ThemeToggle />
         {!isLoading &&
           (user ? (
             <Button variant="outline" onClick={signOut}>
