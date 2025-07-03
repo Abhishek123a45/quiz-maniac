@@ -261,6 +261,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
       "questions": [ // Optional
         {
           "question_text": "Your question?",
+          "explanation": "Explanation for this question (optional)",
           "options": [
             {"text": "Option A", "is_correct": false},
             {"text": "Option B", "is_correct": true}
@@ -274,6 +275,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
           "questions": [ // Optional
             {
               "question_text": "Sub-topic question?",
+              "explanation": "Explanation for this question (optional)",
               "options": [
                 {"text": "Sub Option A", "is_correct": true}
               ]

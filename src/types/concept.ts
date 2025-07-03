@@ -7,6 +7,7 @@ export interface ConceptOption {
 export interface ConceptQuestion {
   question_text: string;
   options: ConceptOption[];
+  explanation?: string; // Added explanation field
 }
 
 export interface SubExplanation {

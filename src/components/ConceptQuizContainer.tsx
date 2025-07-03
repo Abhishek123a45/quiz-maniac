@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
@@ -6,15 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { PartyPopper, ThumbsDown } from "lucide-react";
+import { PartyPopper, ThumbsDown, ChevronLeft, ChevronRight, Home } from "lucide-react";
 
 interface ConceptQuizContainerProps {
   conceptData: ConceptData;
   title: string;
   description: string;
+  onBackToHome?: () => void;
 }
 
-export const ConceptQuizContainer = ({ conceptData, title, description }: ConceptQuizContainerProps) => {
+export const ConceptQuizContainer = ({ conceptData, title, description, onBackToHome }: ConceptQuizContainerProps) => {
   const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
   const [currentStage, setCurrentStage] = useState<'explanation' | 'questions' | 'sub-explanations' | 'sub-questions' | 'results'>('explanation');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -32,6 +32,120 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
     total + (concept.questions?.length || 0) + 
     (concept.sub_explanations?.reduce((subTotal, subExp) => subTotal + (subExp.questions?.length || 0), 0) || 0), 0
   );
+
+  // Navigation helpers
+  const canNavigateBack = () => {
+    if (currentStage === 'explanation' && currentConceptIndex > 0) return true;
+    if (currentStage === 'questions' && currentQuestionIndex > 0) return true;
+    if (currentStage === 'questions' && currentQuestionIndex === 0) return true; // Can go back to explanation
+    if (currentStage === 'sub-explanations' && currentSubExplanationIndex > 0) return true;
+    if (currentStage === 'sub-explanations' && currentSubExplanationIndex === 0) return true; // Can go back to questions
+    if (currentStage === 'sub-questions' && currentQuestionIndex > 0) return true;
+    if (currentStage === 'sub-questions' && currentQuestionIndex === 0) return true; // Can go back to sub-explanation
+    return false;
+  };
+
+  const canNavigateForward = () => {
+    if (currentStage === 'explanation') return true;
+    if (currentStage === 'questions' && currentQuestionIndex < (currentConcept.questions?.length || 0) - 1) return true;
+    if (currentStage === 'questions' && currentQuestionIndex === (currentConcept.questions?.length || 0) - 1) return true;
+    if (currentStage === 'sub-explanations' && currentSubExplanationIndex < (currentConcept.sub_explanations?.length || 0) - 1) return true;
+    if (currentStage === 'sub-explanations' && currentSubExplanationIndex === (currentConcept.sub_explanations?.length || 0) - 1) return true;
+    if (currentStage === 'sub-questions' && currentQuestionIndex < (currentConcept.sub_explanations?.[currentSubExplanationIndex]?.questions?.length || 0) - 1) return true;
+    if (currentStage === 'sub-questions' && currentQuestionIndex === (currentConcept.sub_explanations?.[currentSubExplanationIndex]?.questions?.length || 0) - 1) return true;
+    return currentConceptIndex < totalConcepts - 1;
+  };
+
+  const navigateBack = () => {
+    if (currentStage === 'explanation' && currentConceptIndex > 0) {
+      setCurrentConceptIndex(currentConceptIndex - 1);
+      // Go to the end of previous concept
+      const prevConcept = conceptData.concepts[currentConceptIndex - 1];
+      if (prevConcept.sub_explanations && prevConcept.sub_explanations.length > 0) {
+        setCurrentStage('sub-explanations');
+        setCurrentSubExplanationIndex(prevConcept.sub_explanations.length - 1);
+      } else if (prevConcept.questions && prevConcept.questions.length > 0) {
+        setCurrentStage('questions');
+        setCurrentQuestionIndex(prevConcept.questions.length - 1);
+      }
+    } else if (currentStage === 'questions') {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(currentQuestionIndex - 1);
+      } else {
+        setCurrentStage('explanation');
+      }
+    } else if (currentStage === 'sub-explanations') {
+      if (currentSubExplanationIndex > 0) {
+        setCurrentSubExplanationIndex(currentSubExplanationIndex - 1);
+      } else if (currentConcept.questions && currentConcept.questions.length > 0) {
+        setCurrentStage('questions');
+        setCurrentQuestionIndex(currentConcept.questions.length - 1);
+      } else {
+        setCurrentStage('explanation');
+      }
+    } else if (currentStage === 'sub-questions') {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(currentQuestionIndex - 1);
+      } else {
+        setCurrentStage('sub-explanations');
+        setShowSubExplanation(true);
+      }
+    }
+    setSelectedOption(null);
+    setShowQuestionResult(false);
+  };
+
+  const navigateForward = () => {
+    if (currentStage === 'explanation') {
+      if (currentConcept.questions && currentConcept.questions.length > 0) {
+        setCurrentStage('questions');
+        setCurrentQuestionIndex(0);
+      } else if (currentConcept.sub_explanations && currentConcept.sub_explanations.length > 0) {
+        setCurrentStage('sub-explanations');
+        setCurrentSubExplanationIndex(0);
+        setShowSubExplanation(true);
+      } else {
+        moveToNextConcept();
+      }
+    } else if (currentStage === 'questions') {
+      if (currentQuestionIndex < (currentConcept.questions?.length || 0) - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else if (currentConcept.sub_explanations && currentConcept.sub_explanations.length > 0) {
+        setCurrentStage('sub-explanations');
+        setCurrentSubExplanationIndex(0);
+        setCurrentQuestionIndex(0);
+        setShowSubExplanation(true);
+      } else {
+        moveToNextConcept();
+      }
+    } else if (currentStage === 'sub-explanations') {
+      const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
+      if (currentSubExp.questions && currentSubExp.questions.length > 0) {
+        setCurrentStage('sub-questions');
+        setCurrentQuestionIndex(0);
+        setShowSubExplanation(false);
+      } else if (currentSubExplanationIndex < currentConcept.sub_explanations!.length - 1) {
+        setCurrentSubExplanationIndex(currentSubExplanationIndex + 1);
+        setShowSubExplanation(true);
+      } else {
+        moveToNextConcept();
+      }
+    } else if (currentStage === 'sub-questions') {
+      const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
+      if (currentQuestionIndex < (currentSubExp.questions?.length || 0) - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else if (currentSubExplanationIndex < currentConcept.sub_explanations!.length - 1) {
+        setCurrentSubExplanationIndex(currentSubExplanationIndex + 1);
+        setCurrentQuestionIndex(0);
+        setCurrentStage('sub-explanations');
+        setShowSubExplanation(true);
+      } else {
+        moveToNextConcept();
+      }
+    }
+    setSelectedOption(null);
+    setShowQuestionResult(false);
+  };
 
   const playSound = (isCorrect: boolean) => {
     try {
@@ -65,14 +179,12 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
   };
 
   const handleStartQuestions = () => {
-    // Check if current concept has questions
     if (currentConcept.questions && currentConcept.questions.length > 0) {
       setCurrentStage('questions');
       setCurrentQuestionIndex(0);
       setShowQuestionResult(false);
       setSelectedOption(null);
     } else {
-      // Skip to sub-explanations or next concept if no questions
       if (currentConcept.sub_explanations && currentConcept.sub_explanations.length > 0) {
         setCurrentStage('sub-explanations');
         setCurrentSubExplanationIndex(0);
@@ -124,7 +236,6 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
         setSelectedOption(null);
         setShowQuestionResult(false);
       } else {
-        // Move to sub-explanations or next concept
         if (currentConcept.sub_explanations && currentConcept.sub_explanations.length > 0) {
           setCurrentStage('sub-explanations');
           setCurrentSubExplanationIndex(0);
@@ -178,7 +289,6 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
       setSelectedOption(null);
       setShowSubExplanation(false);
     } else {
-      // No questions, move to next sub-explanation or concept
       if (currentSubExplanationIndex < currentConcept.sub_explanations!.length - 1) {
         setCurrentSubExplanationIndex(currentSubExplanationIndex + 1);
         setShowSubExplanation(true);
@@ -202,6 +312,47 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
   const correctAnswers = userAnswers.filter(answer => answer.isCorrect).length;
   const totalScore = userAnswers.reduce((sum, answer) => sum + answer.score, 0);
   const progressPercentage = (userAnswers.length / totalQuestions) * 100;
+
+  // Navigation Controls Component
+  const NavigationControls = () => (
+    <div className="flex justify-between items-center mb-4">
+      <Button
+        onClick={navigateBack}
+        disabled={!canNavigateBack()}
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-2"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back
+      </Button>
+      
+      <div className="flex gap-2">
+        {onBackToHome && (
+          <Button
+            onClick={onBackToHome}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Home className="w-4 h-4" />
+            Home
+          </Button>
+        )}
+      </div>
+      
+      <Button
+        onClick={navigateForward}
+        disabled={!canNavigateForward()}
+        variant="outline"
+        size="sm"
+        className="flex items-center gap-2"
+      >
+        Next
+        <ChevronRight className="w-4 h-4" />
+      </Button>
+    </div>
+  );
 
   if (currentStage === 'results') {
     return (
@@ -228,9 +379,16 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
               </p>
             </Card>
           </div>
-          <Button onClick={restartQuiz} className="bg-purple-600 hover:bg-purple-700 text-white">
-            Restart Quiz
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={restartQuiz} className="bg-purple-600 hover:bg-purple-700 text-white">
+              Restart Quiz
+            </Button>
+            {onBackToHome && (
+              <Button onClick={onBackToHome} variant="outline">
+                Back to Home
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );
@@ -248,6 +406,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          <NavigationControls />
           <div className="p-6 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg">
             <h4 className="font-medium text-purple-900 mb-3">Concept Explanation:</h4>
             <p className="text-purple-800 leading-relaxed">{currentConcept.explanation}</p>
@@ -281,6 +440,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          <NavigationControls />
           <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
             <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
             <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
@@ -300,14 +460,13 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
     );
   }
 
-  // Question display logic - only show if questions exist
+  // Question display logic
   const hasQuestions = currentStage === 'questions' 
     ? (currentConcept.questions && currentConcept.questions.length > 0)
     : (currentConcept.sub_explanations![currentSubExplanationIndex].questions && 
        currentConcept.sub_explanations![currentSubExplanationIndex].questions!.length > 0);
 
   if (!hasQuestions) {
-    // Skip to next part if no questions
     setTimeout(() => handleNextQuestion(), 0);
     return null;
   }
@@ -351,6 +510,8 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
           </p>
         </CardHeader>
         <CardContent>
+          <NavigationControls />
+          
           <RadioGroup
             value={selectedOption?.toString()}
             onValueChange={(value) => setSelectedOption(parseInt(value))}
@@ -392,6 +553,14 @@ export const ConceptQuizContainer = ({ conceptData, title, description }: Concep
               </div>
             ))}
           </RadioGroup>
+
+          {/* Question Explanation */}
+          {showQuestionResult && currentQuestion.explanation && (
+            <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Explanation:</h5>
+              <p className="text-blue-800 text-sm leading-relaxed">{currentQuestion.explanation}</p>
+            </div>
+          )}
 
           <div className="mt-6">
             {!showQuestionResult ? (
