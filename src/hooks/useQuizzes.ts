@@ -107,6 +107,45 @@ export const useQuizzes = (folderId?: string | null) => {
     },
   });
 
+  // Update quiz mutation (for editing title and description)
+  const updateQuizMutation = useMutation({
+    mutationFn: async ({ id, quiz_title, description }: { id: string; quiz_title: string; description: string }) => {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .update({ 
+          quiz_title,
+          description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return {
+        ...data,
+        questions:
+          typeof data.questions === "string"
+            ? JSON.parse(data.questions)
+            : data.questions,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+      toast({
+        title: "Success",
+        description: "Quiz updated successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update quiz. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Error updating quiz:', error);
+    },
+  });
+
   // Move quiz to folder mutation
   const moveQuizMutation = useMutation({
     mutationFn: async ({ quizId, folderId }: { quizId: string; folderId: string | null }) => {
@@ -177,9 +216,11 @@ export const useQuizzes = (folderId?: string | null) => {
     isLoading,
     error,
     saveQuiz: saveQuizMutation.mutate,
+    updateQuiz: updateQuizMutation.mutate,
     moveQuiz: moveQuizMutation.mutate,
     deleteQuiz: deleteQuizMutation.mutate,
     isSaving: saveQuizMutation.isPending,
+    isUpdating: updateQuizMutation.isPending,
     isMoving: moveQuizMutation.isPending,
     isDeleting: deleteQuizMutation.isPending,
   };
