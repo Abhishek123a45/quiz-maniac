@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,61 +33,15 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     (concept.sub_explanations?.reduce((subTotal, subExp) => subTotal + (subExp.questions?.length || 0), 0) || 0), 0
   );
 
-  // Randomize options for questions
-  const randomizedOptions = useMemo(() => {
-    const randomizeQuestionOptions = (question: any) => {
-      const optionsWithIndex = question.options.map((option: any, index: number) => ({
-        ...option,
-        originalIndex: index
-      }));
-      
-      // Shuffle array using Fisher-Yates algorithm
-      for (let i = optionsWithIndex.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
-      }
-      
-      return optionsWithIndex;
-    };
-
-    const randomizedData: any = {};
-    
-    conceptData.concepts.forEach((concept, conceptIndex) => {
-      randomizedData[conceptIndex] = {};
-      
-      // Randomize main concept questions
-      if (concept.questions) {
-        randomizedData[conceptIndex].questions = {};
-        concept.questions.forEach((question, questionIndex) => {
-          randomizedData[conceptIndex].questions[questionIndex] = randomizeQuestionOptions(question);
-        });
-      }
-      
-      // Randomize sub-explanation questions
-      if (concept.sub_explanations) {
-        randomizedData[conceptIndex].subExplanations = {};
-        concept.sub_explanations.forEach((subExp, subIndex) => {
-          if (subExp.questions) {
-            randomizedData[conceptIndex].subExplanations[subIndex] = {};
-            subExp.questions.forEach((question, questionIndex) => {
-              randomizedData[conceptIndex].subExplanations[subIndex][questionIndex] = randomizeQuestionOptions(question);
-            });
-          }
-        });
-      }
-    });
-    
-    return randomizedData;
-  }, [conceptData]);
-
+  // Navigation helpers
   const canNavigateBack = () => {
     if (currentStage === 'explanation' && currentConceptIndex > 0) return true;
     if (currentStage === 'questions' && currentQuestionIndex > 0) return true;
-    if (currentStage === 'questions' && currentQuestionIndex === 0) return true;
+    if (currentStage === 'questions' && currentQuestionIndex === 0) return true; // Can go back to explanation
     if (currentStage === 'sub-explanations' && currentSubExplanationIndex > 0) return true;
-    if (currentStage === 'sub-explanations' && currentSubExplanationIndex === 0) return true;
+    if (currentStage === 'sub-explanations' && currentSubExplanationIndex === 0) return true; // Can go back to questions
     if (currentStage === 'sub-questions' && currentQuestionIndex > 0) return true;
-    if (currentStage === 'sub-questions' && currentQuestionIndex === 0) return true;
+    if (currentStage === 'sub-questions' && currentQuestionIndex === 0) return true; // Can go back to sub-explanation
     return false;
   };
 
@@ -105,6 +59,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const navigateBack = () => {
     if (currentStage === 'explanation' && currentConceptIndex > 0) {
       setCurrentConceptIndex(currentConceptIndex - 1);
+      // Go to the end of previous concept
       const prevConcept = conceptData.concepts[currentConceptIndex - 1];
       if (prevConcept.sub_explanations && prevConcept.sub_explanations.length > 0) {
         setCurrentStage('sub-explanations');
@@ -246,20 +201,16 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const handleSubmitAnswer = () => {
     if (selectedOption === null) return;
 
-    // Get randomized options
-    const randomizedOptionsForQuestion = currentStage === 'questions' 
-      ? randomizedOptions[currentConceptIndex]?.questions?.[currentQuestionIndex]
-      : randomizedOptions[currentConceptIndex]?.subExplanations?.[currentSubExplanationIndex]?.[currentQuestionIndex];
-
-    const selectedRandomizedOption = randomizedOptionsForQuestion?.[selectedOption];
-    const isCorrect = selectedRandomizedOption?.is_correct || false;
+    const isCorrect = currentStage === 'questions' 
+      ? currentConcept.questions![currentQuestionIndex].options[selectedOption].is_correct
+      : currentConcept.sub_explanations![currentSubExplanationIndex].questions![currentQuestionIndex].options[selectedOption].is_correct;
 
     const score = isCorrect ? 100 : -50;
 
     const answer: ConceptAnswer = {
       conceptIndex: currentConceptIndex,
       questionIndex: currentQuestionIndex,
-      selectedOption: selectedRandomizedOption?.originalIndex || selectedOption,
+      selectedOption,
       isCorrect,
       score,
       isSubExplanation: currentStage === 'sub-questions',
@@ -362,6 +313,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const totalScore = userAnswers.reduce((sum, answer) => sum + answer.score, 0);
   const progressPercentage = (userAnswers.length / totalQuestions) * 100;
 
+  // Navigation Controls Component
   const NavigationControls = () => (
     <div className="flex justify-between items-center mb-4">
       <Button
@@ -406,23 +358,23 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     return (
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+          <CardTitle className="text-3xl font-bold text-purple-900">
             Quiz Complete!
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="p-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Score</h3>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{correctAnswers}/{userAnswers.length}</p>
+              <h3 className="text-lg font-semibold text-gray-800">Score</h3>
+              <p className="text-2xl font-bold text-purple-600">{correctAnswers}/{userAnswers.length}</p>
             </Card>
             <Card className="p-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Points</h3>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalScore}</p>
+              <h3 className="text-lg font-semibold text-gray-800">Total Points</h3>
+              <p className="text-2xl font-bold text-purple-600">{totalScore}</p>
             </Card>
             <Card className="p-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Accuracy</h3>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              <h3 className="text-lg font-semibold text-gray-800">Accuracy</h3>
+              <p className="text-2xl font-bold text-purple-600">
                 {userAnswers.length > 0 ? Math.round((correctAnswers / userAnswers.length) * 100) : 0}%
               </p>
             </Card>
@@ -446,18 +398,18 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     return (
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+          <CardTitle className="text-2xl font-bold text-purple-900">
             {currentConcept.name}
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-sm text-gray-600 mt-2">
             Concept {currentConceptIndex + 1} of {totalConcepts}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 rounded-r-lg">
-            <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-3">Concept Explanation:</h4>
-            <p className="text-purple-800 dark:text-purple-200 leading-relaxed">{currentConcept.explanation}</p>
+          <div className="p-6 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg">
+            <h4 className="font-medium text-purple-900 mb-3">Concept Explanation:</h4>
+            <p className="text-purple-800 leading-relaxed">{currentConcept.explanation}</p>
           </div>
           <div className="text-center">
             <Button 
@@ -480,18 +432,18 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     return (
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl font-bold text-purple-900 dark:text-purple-100">
+          <CardTitle className="text-xl font-bold text-purple-900">
             {currentSubExp.title}
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-sm text-gray-600 mt-2">
             Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg">
-            <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-3">Sub-topic Explanation:</h4>
-            <p className="text-blue-800 dark:text-blue-200 leading-relaxed">{currentSubExp.explanation}</p>
+          <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+            <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
+            <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
           </div>
           <div className="text-center">
             <Button 
@@ -508,6 +460,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     );
   }
 
+  // Question display logic
   const hasQuestions = currentStage === 'questions' 
     ? (currentConcept.questions && currentConcept.questions.length > 0)
     : (currentConcept.sub_explanations![currentSubExplanationIndex].questions && 
@@ -521,11 +474,6 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const currentQuestion = currentStage === 'questions' 
     ? currentConcept.questions![currentQuestionIndex]
     : currentConcept.sub_explanations![currentSubExplanationIndex].questions![currentQuestionIndex];
-
-  // Get randomized options for the current question
-  const randomizedOptionsForQuestion = currentStage === 'questions' 
-    ? randomizedOptions[currentConceptIndex]?.questions?.[currentQuestionIndex]
-    : randomizedOptions[currentConceptIndex]?.subExplanations?.[currentSubExplanationIndex]?.[currentQuestionIndex];
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -544,19 +492,19 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
       <div className="mb-6">
         <Progress value={progressPercentage} className="w-full" />
         <div className="text-center mt-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600">
             Progress: {userAnswers.length}/{totalQuestions} questions • 
-            Score: <span className="font-semibold text-purple-600 dark:text-purple-400">{totalScore}</span> points
+            Score: <span className="font-semibold text-purple-600">{totalScore}</span> points
           </span>
         </div>
       </div>
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-xl text-gray-800 dark:text-gray-200 leading-relaxed">
+          <CardTitle className="text-xl text-gray-800 leading-relaxed">
             {currentQuestion.question_text}
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600">
             {currentStage === 'questions' ? 'Main Concept' : currentConcept.sub_explanations![currentSubExplanationIndex].title} • 
             Question {currentQuestionIndex + 1}
           </p>
@@ -569,19 +517,19 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
             onValueChange={(value) => setSelectedOption(parseInt(value))}
             className="space-y-3"
           >
-            {randomizedOptionsForQuestion?.map((option: any, index: number) => (
+            {currentQuestion.options.map((option, index) => (
               <div 
                 key={index} 
                 className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                   showQuestionResult
                     ? option.is_correct
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-500'
+                      ? 'bg-green-50 border-green-500'
                       : selectedOption === index
-                      ? 'bg-red-50 dark:bg-red-900/20 border-red-500'
-                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                      ? 'bg-red-50 border-red-500'
+                      : 'bg-gray-50 border-gray-200'
                     : selectedOption === index
-                    ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-500'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'bg-purple-50 border-purple-500'
+                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
                 onClick={() => !showQuestionResult && setSelectedOption(index)}
               >
@@ -592,24 +540,25 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
                 />
                 <Label 
                   htmlFor={`option-${index}`} 
-                  className="flex-1 cursor-pointer text-gray-700 dark:text-gray-300"
+                  className="flex-1 cursor-pointer text-gray-700"
                 >
                   {option.text}
                 </Label>
                 {showQuestionResult && option.is_correct && (
-                  <span className="text-green-600 dark:text-green-400 font-medium">✓ Correct</span>
+                  <span className="text-green-600 font-medium">✓ Correct</span>
                 )}
                 {showQuestionResult && selectedOption === index && !option.is_correct && (
-                  <span className="text-red-600 dark:text-red-400 font-medium">✗ Incorrect</span>
+                  <span className="text-red-600 font-medium">✗ Incorrect</span>
                 )}
               </div>
             ))}
           </RadioGroup>
 
+          {/* Question Explanation */}
           {showQuestionResult && currentQuestion.explanation && (
-            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 rounded-r-lg">
-              <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Explanation:</h5>
-              <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">{currentQuestion.explanation}</p>
+            <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Explanation:</h5>
+              <p className="text-blue-800 text-sm leading-relaxed">{currentQuestion.explanation}</p>
             </div>
           )}
 

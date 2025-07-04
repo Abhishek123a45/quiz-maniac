@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
-import SavedQuizzesPage from "./pages/SavedQuizzes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -41,14 +40,6 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <Index />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/saved-quizzes"
-                  element={
-                    <ProtectedRoute>
-                      <SavedQuizzesPage />
                     </ProtectedRoute>
                   }
                 />
