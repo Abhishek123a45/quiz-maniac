@@ -25,7 +25,7 @@ const SavedQuizzesPage = () => {
   if (currentQuiz) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <QuizContainer quiz={currentQuiz} onBack={handleBack} />
+        <QuizContainer quizData={currentQuiz} />
         <BottomNavbar />
       </div>
     );

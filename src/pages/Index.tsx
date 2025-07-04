@@ -39,7 +39,7 @@ const Index = () => {
   if (view === "quiz" && currentQuiz) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <QuizContainer quiz={currentQuiz} onBack={handleBackToHome} />
+        <QuizContainer quizData={currentQuiz} />
         <BottomNavbar />
       </div>
     );
@@ -52,7 +52,7 @@ const Index = () => {
           conceptData={currentConcept.data}
           title={currentConcept.title}
           description={currentConcept.description}
-          onBack={handleBackToHome}
+          onBackToHome={handleBackToHome}
         />
         <BottomNavbar />
       </div>
