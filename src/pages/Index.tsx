@@ -5,9 +5,59 @@ import { QuizCreator } from "@/components/QuizCreator";
 import { SavedQuizzes } from "@/components/SavedQuizzes";
 import { ConceptBuilder } from "@/components/ConceptBuilder";
 import { BottomNavbar } from "@/components/BottomNavbar";
+import { QuizContainer } from "@/components/QuizContainer";
+import { ConceptQuizContainer } from "@/components/ConceptQuizContainer";
+import { QuizData } from "@/types/quiz";
+import { ConceptData } from "@/types/concept";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("quiz");
+  const [currentQuiz, setCurrentQuiz] = useState<QuizData | null>(null);
+  const [currentConcept, setCurrentConcept] = useState<{
+    data: ConceptData;
+    title: string;
+    description: string;
+  } | null>(null);
+  const [view, setView] = useState<"home" | "quiz" | "concept">("home");
+
+  const handleQuizCreate = (quizData: QuizData) => {
+    setCurrentQuiz(quizData);
+    setView("quiz");
+  };
+
+  const handleConceptCreate = (conceptData: ConceptData, title: string, description: string) => {
+    setCurrentConcept({ data: conceptData, title, description });
+    setView("concept");
+  };
+
+  const handleBackToHome = () => {
+    setCurrentQuiz(null);
+    setCurrentConcept(null);
+    setView("home");
+  };
+
+  if (view === "quiz" && currentQuiz) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <QuizContainer quiz={currentQuiz} onBack={handleBackToHome} />
+        <BottomNavbar />
+      </div>
+    );
+  }
+
+  if (view === "concept" && currentConcept) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <ConceptQuizContainer 
+          conceptData={currentConcept.data}
+          title={currentConcept.title}
+          description={currentConcept.description}
+          onBack={handleBackToHome}
+        />
+        <BottomNavbar />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -29,15 +79,15 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="quiz" className="space-y-6">
-            <QuizCreator />
+            <QuizCreator onQuizCreate={handleQuizCreate} onCancel={() => {}} />
           </TabsContent>
 
           <TabsContent value="saved" className="space-y-6">
-            <SavedQuizzes />
+            <SavedQuizzes onQuizSelect={handleQuizCreate} onBack={() => {}} />
           </TabsContent>
 
           <TabsContent value="concept" className="space-y-6">
-            <ConceptBuilder />
+            <ConceptBuilder onConceptCreate={handleConceptCreate} onCancel={() => {}} />
           </TabsContent>
         </Tabs>
       </div>
