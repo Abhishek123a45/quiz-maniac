@@ -9,6 +9,8 @@ import { QuizContainer } from "@/components/QuizContainer";
 import { ConceptQuizContainer } from "@/components/ConceptQuizContainer";
 import { QuizData } from "@/types/quiz";
 import { ConceptData } from "@/types/concept";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("quiz");
@@ -39,6 +41,17 @@ const Index = () => {
   if (view === "quiz" && currentQuiz) {
     return (
       <div className="min-h-screen bg-background pb-20">
+        <div className="container mx-auto px-4 py-4">
+          <Button
+            onClick={handleBackToHome}
+            variant="outline"
+            size="sm"
+            className="mb-4 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Button>
+        </div>
         <QuizContainer quizData={currentQuiz} />
         <BottomNavbar />
       </div>
