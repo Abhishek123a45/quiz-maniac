@@ -22,7 +22,7 @@ export const ConceptAnalytics = ({ quizData, userAnswers }: ConceptAnalyticsProp
     
     // Show debug information in development
     return (
-      <Card className="border-yellow-200 bg-yellow-50">
+      <Card className="border-yellow-200 bg-background">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-yellow-800">
             <AlertCircle className="w-5 h-5" />

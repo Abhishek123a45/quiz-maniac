@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -173,33 +172,32 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
   if (quizzesLoading || foldersLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 py-8 px-4">
+      <div className="min-h-screen py-8 px-4">
         <div className="container mx-auto">
-          <div className="text-center text-gray-300">Loading...</div>
+          <div className="text-center">Loading...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8 px-4">
+    <div className="min-h-screen py-8 px-4 bg-background text-foreground">
       <div className="container mx-auto">
         <div className="mb-6">
-          <Button onClick={onBack} variant="outline" className="mb-4 border-gray-700 text-gray-300 hover:bg-gray-800">
+          <Button onClick={onBack} variant="outline" className="mb-4">
             ← Back to Home
           </Button>
-          <h1 className="text-3xl font-bold text-white mb-2">Saved Quizzes</h1>
-          <p className="text-gray-400">Your collection of saved quizzes organized in folders</p>
-          
+          <h1 className="text-3xl font-bold mb-2">Saved Quizzes</h1>
+          <p className="">Your collection of saved quizzes organized in folders</p>
           {!user && (
-            <div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+            <div className="mt-4 p-4 bg-yellow-100/20 border border-yellow-400 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-700">
               <div className="flex items-center gap-2">
-                <LogIn className="w-5 h-5 text-yellow-400" />
-                <p className="text-yellow-300">
+                <LogIn className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                <p className="text-yellow-800 dark:text-yellow-300">
                   Sign in to create folders and organize your quizzes. 
                   <Button 
                     variant="link" 
-                    className="p-0 h-auto text-yellow-300 underline ml-1 hover:text-yellow-200"
+                    className="p-0 h-auto underline ml-1 text-yellow-800 hover:text-yellow-600 dark:text-yellow-300 dark:hover:text-yellow-200"
                     onClick={() => navigate('/auth')}
                   >
                     Sign in here
@@ -213,9 +211,9 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Folder Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="bg-gray-800 border-gray-700">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-white">
+                <CardTitle className="text-lg flex items-center gap-2">
                   <Folder className="w-5 h-5" />
                   Folders
                 </CardTitle>
@@ -225,11 +223,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                 <div className="space-y-2">
                   <Button
                     variant={currentFolderId === null ? "default" : "ghost"}
-                    className={`w-full justify-start ${
-                      currentFolderId === null 
-                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
-                        : "text-gray-300 hover:bg-gray-700"
-                    }`}
+                    className="w-full justify-start"
                     onClick={() => setCurrentFolderId(null)}
                   >
                     All Quizzes
@@ -260,23 +254,23 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
             {/* Search */}
             <div className="mb-6">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search quizzes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                  className="pl-10"
                 />
               </div>
             </div>
 
             {!filteredQuizzes || filteredQuizzes.length === 0 ? (
-              <Card className="w-full bg-gray-800 border-gray-700">
+              <Card>
                 <CardContent className="text-center py-12">
-                  <p className="text-gray-300 text-lg">
+                  <p className="text-lg">
                     {currentFolder ? `No quizzes in "${currentFolder.name}"` : "No quizzes found"}
                   </p>
-                  <p className="text-gray-500 mt-2">
+                  <p className="mt-2 text-muted-foreground">
                     {searchTerm ? "Try adjusting your search terms" : "Create your first quiz to get started!"}
                   </p>
                 </CardContent>
@@ -284,29 +278,29 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filteredQuizzes.map((quiz) => (
-                  <Card key={quiz.id} className="bg-gray-800 border-gray-700 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/30">
+                  <Card key={quiz.id} className="hover:shadow-xl transition-all duration-300">
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg text-white line-clamp-2 flex-1">
+                        <CardTitle className="text-lg line-clamp-2 flex-1">
                           {quiz.quiz_title}
                         </CardTitle>
                         {quiz.quiz_type === 'concept' && (
-                          <Badge variant="secondary" className="ml-2 bg-purple-900/50 text-purple-300 border-purple-700">
+                          <Badge variant="secondary" className="ml-2">
                             <Brain className="w-3 h-3 mr-1" />
                             Concept
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center text-sm text-gray-400 mt-2">
+                      <div className="flex items-center text-sm text-muted-foreground mt-2">
                         <Calendar className="w-4 h-4 mr-1" />
                         {new Date(quiz.created_at).toLocaleDateString()}
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+                      <p className="text-sm mb-4 line-clamp-3 ">
                         {quiz.description}
                       </p>
-                      <div className="text-sm text-gray-500 mb-4">
+                      <div className="text-sm text-muted-foreground mb-4">
                         {quiz.quiz_type === 'concept' 
                           ? `${getConceptCount(quiz)} concept${getConceptCount(quiz) !== 1 ? 's' : ''}`
                           : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
@@ -315,7 +309,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handlePlayQuiz(quiz)}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          className="flex-1"
                         >
                           <Play className="w-4 h-4 mr-2" />
                           Play
@@ -327,23 +321,22 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                               variant="outline"
                               size="icon"
                               disabled={isUpdating}
-                              className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-blue-500"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
 
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" disabled={isMoving} className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                                <Button variant="outline" size="icon" disabled={isMoving}>
                                   <Move className="w-4 h-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                                <DropdownMenuItem onClick={() => handleMoveQuiz(quiz.id, null)} disabled={quiz.folder_id === null} className="text-gray-300 hover:bg-gray-700">
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleMoveQuiz(quiz.id, null)} disabled={quiz.folder_id === null}>
                                   <Home className="w-4 h-4 mr-2" />
                                   <span>Move to All Quizzes</span>
                                 </DropdownMenuItem>
-                                {folderTree.length > 0 && <DropdownMenuSeparator className="bg-gray-700" />}
+                                {folderTree.length > 0 && <DropdownMenuSeparator />}
                                 {renderMoveOptions(folderTree, quiz.id, quiz.folder_id)}
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -353,7 +346,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                               variant="outline"
                               size="icon"
                               disabled={isDeleting}
-                              className="border-gray-600 hover:bg-red-900/20 hover:border-red-500 text-red-400"
+                              className="hover:bg-destructive/20 hover:border-destructive text-destructive"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -370,7 +363,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
         {/* Edit Folder Dialog */}
         <Dialog open={!!editingFolder} onOpenChange={() => setEditingFolder(null)}>
-          <DialogContent className="sm:max-w-md bg-gray-800 border-gray-700">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-white">Edit Folder</DialogTitle>
             </DialogHeader>
@@ -381,7 +374,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Enter folder name"
-                  className="bg-gray-700 border-gray-600 text-white"
+                  className= "text-white"
                 />
               </div>
               <div>
@@ -401,7 +394,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingFolder(null)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                <Button variant="outline" onClick={() => setEditingFolder(null)} className="">
                   Cancel
                 </Button>
                 <Button onClick={handleUpdateFolder} disabled={isFolderUpdating || !editName.trim()} className="bg-blue-600 hover:bg-blue-700">
@@ -414,7 +407,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
         {/* Edit Quiz Dialog */}
         <Dialog open={!!editingQuiz} onOpenChange={() => setEditingQuiz(null)}>
-          <DialogContent className="sm:max-w-md bg-gray-800 border-gray-700">
+          <DialogContent className="sm:max-w-md ">
             <DialogHeader>
               <DialogTitle className="text-white">Edit Quiz</DialogTitle>
             </DialogHeader>
@@ -428,7 +421,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                   value={editQuizTitle}
                   onChange={(e) => setEditQuizTitle(e.target.value)}
                   placeholder="Enter quiz title"
-                  className="bg-gray-700 border-gray-600 text-white"
+                  className=" text-white"
                 />
               </div>
               <div>
@@ -440,11 +433,11 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                   value={editQuizDescription}
                   onChange={(e) => setEditQuizDescription(e.target.value)}
                   placeholder="Enter quiz description"
-                  className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
+                  className=" text-white min-h-[100px]"
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setEditingQuiz(null)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                <Button variant="outline" onClick={() => setEditingQuiz(null)} className="">
                   Cancel
                 </Button>
                 <Button onClick={handleUpdateQuiz} disabled={isUpdating || !editQuizTitle.trim() || !editQuizDescription.trim()} className="bg-blue-600 hover:bg-blue-700">

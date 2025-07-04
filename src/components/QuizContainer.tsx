@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { QuestionCard } from "./QuestionCard";
@@ -158,7 +157,9 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
         {/* Show current score */}
         <div className="text-center mt-2">
           <span className="text-sm text-gray-600">
-            Current Score: <span className="font-semibold text-blue-600">{totalScore}</span> points
+            Current Score: <span className="font-semibold text-purple-600">
+             {totalScore}
+            </span> points
           </span>
         </div>
       </div>

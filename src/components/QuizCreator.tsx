@@ -9,9 +9,10 @@ import { useQuizzes } from "@/hooks/useQuizzes";
 interface QuizCreatorProps {
   onQuizCreate: (quizData: QuizData) => void;
   onCancel: () => void;
+  onBack: () => void;
 }
 
-export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
+export const QuizCreator = ({ onQuizCreate, onCancel, onBack }: QuizCreatorProps) => {
   const [jsonInput, setJsonInput] = useState("");
   const [conceptsInput, setConceptsInput] = useState("");
   const [error, setError] = useState("");
@@ -159,7 +160,12 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-blue-900">
+        <div>
+        <Button onClick={onBack} variant="outline" className="mb-4">
+            ← Back to Home
+          </Button>
+        </div>
+        <CardTitle className="text-2xl font-bold text-primary">
           Create New Quiz
         </CardTitle>
       </CardHeader>
@@ -262,7 +268,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </Button>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-md">
+        <div className="mt-6 p-4 bg-background rounded-md">
           <h4 className="font-medium text-gray-800 mb-2">Expected Quiz JSON Format (with new features):</h4>
           <pre className="text-xs text-gray-600 overflow-x-auto">
 {`{
@@ -297,7 +303,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </pre>
         </div>
 
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mt-4 p-4 bg-background border  rounded-md">
           <h4 className="font-medium text-blue-800 mb-2">New Features:</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• <strong>Dynamic Scoring:</strong> Add "score" to options, or "correct_score"/"incorrect_score" to questions</li>
@@ -307,7 +313,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </ul>
         </div>
 
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mt-4 p-4 bg-background border  rounded-md">
           <h4 className="font-medium text-blue-800 mb-2">Expected Concepts JSON Format:</h4>
           <pre className="text-xs text-blue-700 overflow-x-auto">
 {`{
@@ -325,7 +331,7 @@ export const QuizCreator = ({ onQuizCreate, onCancel }: QuizCreatorProps) => {
           </pre>
         </div>
 
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+        <div className="mt-4 p-4 bg-background border  rounded-md">
           <h4 className="font-medium text-yellow-800 mb-2">Common JSON Issues:</h4>
           <ul className="text-sm text-yellow-700 space-y-1">
             <li>• Make sure all "citations" fields have values: "citations": ""</li>

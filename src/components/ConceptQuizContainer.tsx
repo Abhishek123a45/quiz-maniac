@@ -407,7 +407,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg">
+          <div className="p-6 bg-background border-l-4 border-purple-500 rounded-r-lg">
             <h4 className="font-medium text-purple-900 mb-3">Concept Explanation:</h4>
             <p className="text-purple-800 leading-relaxed">{currentConcept.explanation}</p>
           </div>
@@ -441,7 +441,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+          <div className="p-6 bg-background border-l-4 border-blue-500 rounded-r-lg">
             <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
             <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
           </div>
@@ -501,7 +501,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-xl text-gray-800 leading-relaxed">
+          <CardTitle className="text-xl text-foreground leading-relaxed">
             {currentQuestion.question_text}
           </CardTitle>
           <p className="text-sm text-gray-600">
@@ -523,13 +523,13 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
                 className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                   showQuestionResult
                     ? option.is_correct
-                      ? 'bg-green-50 border-green-500'
+                      ? 'bg-background border-green-500'
                       : selectedOption === index
-                      ? 'bg-red-50 border-red-500'
-                      : 'bg-gray-50 border-gray-200'
+                      ? 'bg-background border-red-500'
+                      : 'bg-background border-gray-200'
                     : selectedOption === index
-                    ? 'bg-purple-50 border-purple-500'
-                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    ? 'bg-background border-purple-500'
+                    : 'bg-background border-gray-200 hover:bg-popover'
                 }`}
                 onClick={() => !showQuestionResult && setSelectedOption(index)}
               >
@@ -556,7 +556,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
 
           {/* Question Explanation */}
           {showQuestionResult && currentQuestion.explanation && (
-            <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+            <div className="mt-4 p-4 bg-background border-l-4 border-blue-400 rounded-r-lg">
               <h5 className="font-medium text-blue-900 mb-2">Explanation:</h5>
               <p className="text-blue-800 text-sm leading-relaxed">{currentQuestion.explanation}</p>
             </div>

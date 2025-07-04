@@ -167,6 +167,7 @@ export default function Index() {
           <QuizCreator 
             onQuizCreate={handleCreateCustomQuiz}
             onCancel={handleBackToHome}
+            onBack={handleBackToHome}
           />
         </div>
       </div>
@@ -245,17 +246,17 @@ export default function Index() {
         <div className="container mx-auto">
           <Card className="w-full max-w-4xl mx-auto bg-card text-card-foreground">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center text-4xl font-bold text-primary mb-4">
+              <CardTitle className="flex items-center justify-center text-4xl font-bold text-primary mb-2">
                 <span>Quizified</span>
-                <img className="h-20" src="/logo.png"/>
+                <img className="h-20" src="/logo.png" alt="Logo" />
               </CardTitle>
               <p className="text-lg text-muted-foreground">
                 Create and take interactive quizzes with detailed explanations
               </p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
                   <h3 className="text-xl font-semibold text-foreground mb-3">
                     Try Sample Quiz
                   </h3>
@@ -268,7 +269,7 @@ export default function Index() {
                   >
                     Start Sample Quiz
                   </Button>
-                </Card>
+                </Card> */}
 
                 <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
                   <h3 className="text-xl font-semibold text-foreground mb-3">
@@ -280,7 +281,7 @@ export default function Index() {
                   <Button
                     onClick={() => setCurrentView('create')}
                     className="w-full"
-                    variant="secondary"
+                    variant="default"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create New Quiz
@@ -297,7 +298,7 @@ export default function Index() {
                   <Button
                     onClick={() => setCurrentView('concept-builder')}
                     className="w-full"
-                    variant="outline"
+                    variant="greenPrimary"
                   >
                     <Brain className="w-4 h-4 mr-2" />
                     Build Concepts

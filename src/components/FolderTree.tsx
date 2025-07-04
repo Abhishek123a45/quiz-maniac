@@ -49,8 +49,8 @@ export const FolderTree = ({
         return (
           <div key={folder.id}>
             <div 
-              className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer group ${
-                isSelected ? 'bg-blue-50 border border-blue-200' : ''
+              className={`flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 cursor-pointer group ${
+                isSelected ? 'bg-gray-700' : ''
               }`}
               style={{ paddingLeft: `${8 + level * 16}px` }}
             >

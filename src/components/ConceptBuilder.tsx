@@ -138,7 +138,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-bold text-purple-900">
+          <CardTitle className="text-2xl font-bold text-green-600">
             Create Concept Builder Quiz
           </CardTitle>
           <Button
@@ -250,7 +250,7 @@ export const ConceptBuilder = ({ onConceptCreate, onCancel }: ConceptBuilderProp
           )}
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-md">
+        <div className="mt-6 p-4 bg-background rounded-md">
           <h4 className="font-medium text-gray-800 mb-2">Expected Concept JSON Format:</h4>
           <pre className="text-xs text-gray-600 overflow-x-auto">
 {`{

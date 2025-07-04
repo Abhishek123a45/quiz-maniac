@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SubQuestion } from "@/types/quiz";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -39,10 +38,10 @@ export const SubQuestionCard = ({
   const displayExplanation = showExplanation || localShowExplanation;
 
   return (
-    <Card className="w-full mt-4 border-l-4 border-l-blue-300">
+    <Card className="w-full mt-4 border-l-4 ">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg text-gray-700 leading-relaxed">
-          {subQuestion.question_text}
+        <CardTitle className="text-xl leading-relaxed text-foreground">
+            {subQuestion.question_text}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -57,13 +56,13 @@ export const SubQuestionCard = ({
               className={`flex items-center space-x-3 p-2 rounded-lg border transition-all cursor-pointer ${
                 displayExplanation
                   ? option.is_correct
-                    ? 'bg-green-50 border-green-400'
+                    ? 'bg-background border-green-400'
                     : selectedOption === index
-                    ? 'bg-red-50 border-red-400'
-                    : 'bg-gray-50 border-gray-200'
+                    ? 'bg-background border-red-400'
+                    : 'bg-background border-gray-200'
                   : selectedOption === index
-                  ? 'bg-blue-50 border-blue-400'
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                  ? 'bg-background border-blue-400'
+                  : 'bg-background border-gray-200 hover:bg-popover'
               }`}
               onClick={() => handleOptionClick(index)}
             >
@@ -102,7 +101,7 @@ export const SubQuestionCard = ({
         )}
 
         {displayExplanation && (
-          <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+          <div className="mt-4 p-3 bg-background border-l-4 border-blue-400 rounded-r-lg">
             <h5 className="font-medium text-blue-900 mb-1 text-sm">Explanation:</h5>
             <p className="text-blue-800 text-sm">{subQuestion.explanation}</p>
           </div>

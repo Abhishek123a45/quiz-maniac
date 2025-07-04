@@ -87,7 +87,7 @@ export const ResultsCard = ({
                 <div 
                   key={question.id}
                   className={`p-4 rounded-lg border-2 ${
-                    isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                    isCorrect ? 'bg-background border-green-200' : 'bg-background border-red-200'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
