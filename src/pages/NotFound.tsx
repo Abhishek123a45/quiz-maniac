@@ -1,7 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { BottomNavbar } from "@/components/BottomNavbar";
 
 const NotFound = () => {
   const location = useLocation();
@@ -14,10 +14,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background pb-20">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 text-foreground">404</h1>
         <p className="text-xl text-muted-foreground mb-4">Oops! Page not found</p>
@@ -25,8 +22,9 @@ const NotFound = () => {
           Return to Home
         </a>
       </div>
+      <BottomNavbar />
     </div>
   );
-}
+};
 
 export default NotFound;
