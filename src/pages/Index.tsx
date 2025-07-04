@@ -5,72 +5,9 @@ import { QuizCreator } from "@/components/QuizCreator";
 import { SavedQuizzes } from "@/components/SavedQuizzes";
 import { ConceptBuilder } from "@/components/ConceptBuilder";
 import { BottomNavbar } from "@/components/BottomNavbar";
-import { QuizContainer } from "@/components/QuizContainer";
-import { ConceptQuizContainer } from "@/components/ConceptQuizContainer";
-import { QuizData } from "@/types/quiz";
-import { ConceptData } from "@/types/concept";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("quiz");
-  const [currentQuiz, setCurrentQuiz] = useState<QuizData | null>(null);
-  const [currentConcept, setCurrentConcept] = useState<{
-    data: ConceptData;
-    title: string;
-    description: string;
-  } | null>(null);
-  const [view, setView] = useState<"home" | "quiz" | "concept">("home");
-
-  const handleQuizCreate = (quizData: QuizData) => {
-    setCurrentQuiz(quizData);
-    setView("quiz");
-  };
-
-  const handleConceptCreate = (conceptData: ConceptData, title: string, description: string) => {
-    setCurrentConcept({ data: conceptData, title, description });
-    setView("concept");
-  };
-
-  const handleBackToHome = () => {
-    setCurrentQuiz(null);
-    setCurrentConcept(null);
-    setView("home");
-  };
-
-  if (view === "quiz" && currentQuiz) {
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <div className="container mx-auto px-4 py-4">
-          <Button
-            onClick={handleBackToHome}
-            variant="outline"
-            size="sm"
-            className="mb-4 flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-        </div>
-        <QuizContainer quizData={currentQuiz} />
-        <BottomNavbar />
-      </div>
-    );
-  }
-
-  if (view === "concept" && currentConcept) {
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <ConceptQuizContainer 
-          conceptData={currentConcept.data}
-          title={currentConcept.title}
-          description={currentConcept.description}
-          onBackToHome={handleBackToHome}
-        />
-        <BottomNavbar />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -92,15 +29,15 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="quiz" className="space-y-6">
-            <QuizCreator onQuizCreate={handleQuizCreate} onCancel={() => {}} />
+            <QuizCreator />
           </TabsContent>
 
           <TabsContent value="saved" className="space-y-6">
-            <SavedQuizzes onQuizSelect={handleQuizCreate} onBack={() => {}} />
+            <SavedQuizzes />
           </TabsContent>
 
           <TabsContent value="concept" className="space-y-6">
-            <ConceptBuilder onConceptCreate={handleConceptCreate} onCancel={() => {}} />
+            <ConceptBuilder />
           </TabsContent>
         </Tabs>
       </div>
