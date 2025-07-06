@@ -149,7 +149,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       )}
       
       <CardHeader>
-        <CardTitle className="text-xl text-foreground leading-relaxed">
+        <CardTitle className="text-xl text-foregroundleading-relaxed">
           {question.question_text}
         </CardTitle>
       </CardHeader>
@@ -162,7 +162,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           {question.options.map((option, index) => (
             <div 
               key={index} 
-              className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+              className={`flex items-center text-white space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                 showMainExplanation
                   ? option.is_correct
                     ? 'bg-background border-green-500'
@@ -182,7 +182,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               />
               <Label 
                 htmlFor={`option-${index}`} 
-                className="flex-1 cursor-pointer text-gray-700"
+                className="flex-1 cursor-pointer text-foreground"
               >
                 {option.text}
               </Label>

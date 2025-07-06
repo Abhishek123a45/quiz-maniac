@@ -73,7 +73,7 @@ export const SubQuestionCard = ({
               />
               <Label 
                 htmlFor={`sub-option-${subQuestion.id}-${index}`} 
-                className="flex-1 cursor-pointer text-gray-600 text-sm"
+                className="flex-1 cursor-pointer text-foreground text-sm"
               >
                 {option.text}
               </Label>

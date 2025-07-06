@@ -520,7 +520,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
             {currentQuestion.options.map((option, index) => (
               <div 
                 key={index} 
-                className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                className={`flex items-center  space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
                   showQuestionResult
                     ? option.is_correct
                       ? 'bg-background border-green-500'
@@ -540,7 +540,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
                 />
                 <Label 
                   htmlFor={`option-${index}`} 
-                  className="flex-1 cursor-pointer text-gray-700"
+                  className="flex-1 text-foreground cursor-pointer"
                 >
                   {option.text}
                 </Label>
