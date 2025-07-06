@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useMemo } from "react";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,9 +27,47 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
   const [showSubExplanation, setShowSubExplanation] = useState(true);
 
-  const currentConcept = conceptData.concepts[currentConceptIndex];
-  const totalConcepts = conceptData.concepts.length;
-  const totalQuestions = conceptData.concepts.reduce((total, concept) => 
+  // Memoize randomized questions to prevent re-shuffling on re-renders
+  const randomizedConceptData = useMemo(() => {
+    const shuffleArray = <T,>(array: T[]): T[] => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
+    return {
+      ...conceptData,
+      concepts: conceptData.concepts.map(concept => ({
+        ...concept,
+        questions: concept.questions?.map(question => {
+          const shuffledOptions = shuffleArray(question.options.map((option, index) => ({ ...option, originalIndex: index })));
+          return {
+            ...question,
+            options: shuffledOptions,
+            shuffledOptions: shuffledOptions
+          };
+        }),
+        sub_explanations: concept.sub_explanations?.map(subExp => ({
+          ...subExp,
+          questions: subExp.questions?.map(question => {
+            const shuffledOptions = shuffleArray(question.options.map((option, index) => ({ ...option, originalIndex: index })));
+            return {
+              ...question,
+              options: shuffledOptions,
+              shuffledOptions: shuffledOptions
+            };
+          })
+        }))
+      }))
+    };
+  }, [conceptData]);
+
+  const currentConcept = randomizedConceptData.concepts[currentConceptIndex];
+  const totalConcepts = randomizedConceptData.concepts.length;
+  const totalQuestions = randomizedConceptData.concepts.reduce((total, concept) => 
     total + (concept.questions?.length || 0) + 
     (concept.sub_explanations?.reduce((subTotal, subExp) => subTotal + (subExp.questions?.length || 0), 0) || 0), 0
   );
@@ -201,16 +240,18 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
   const handleSubmitAnswer = () => {
     if (selectedOption === null) return;
 
-    const isCorrect = currentStage === 'questions' 
-      ? currentConcept.questions![currentQuestionIndex].options[selectedOption].is_correct
-      : currentConcept.sub_explanations![currentSubExplanationIndex].questions![currentQuestionIndex].options[selectedOption].is_correct;
+    const currentQuestion = currentStage === 'questions' 
+      ? currentConcept.questions![currentQuestionIndex]
+      : currentConcept.sub_explanations![currentSubExplanationIndex].questions![currentQuestionIndex];
 
+    const selectedOptionData = currentQuestion.options[selectedOption];
+    const isCorrect = selectedOptionData.is_correct;
     const score = isCorrect ? 100 : -50;
 
     const answer: ConceptAnswer = {
       conceptIndex: currentConceptIndex,
       questionIndex: currentQuestionIndex,
-      selectedOption,
+      selectedOption: (selectedOptionData as any).originalIndex || selectedOption, // Use original index for tracking
       isCorrect,
       score,
       isSubExplanation: currentStage === 'sub-questions',
