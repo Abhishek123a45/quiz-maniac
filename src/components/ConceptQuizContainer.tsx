@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { AnimatedScore } from "./AnimatedScore";
 import { PartyPopper, ThumbsDown, ChevronLeft, ChevronRight, Home } from "lucide-react";
 
 interface ConceptQuizContainerProps {
@@ -535,7 +535,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
         <div className="text-center mt-2">
           <span className="text-sm text-gray-600">
             Progress: {userAnswers.length}/{totalQuestions} questions • 
-            Score: <span className="font-semibold text-purple-600">{totalScore}</span> points
+            Score: <AnimatedScore score={totalScore} className="text-lg" /> points
           </span>
         </div>
       </div>

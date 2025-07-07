@@ -1,157 +1,83 @@
 
 import { useState } from "react";
-import { QuizQuestion } from "@/types/quiz";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Question } from "@/types/quiz";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { PartyPopper, ThumbsDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SubQuestionCard } from "./SubQuestionCard";
+import { QuestionCommentsDialog } from "./QuestionCommentsDialog";
 
 interface QuestionCardProps {
-  question: QuizQuestion;
+  question: Question;
   onAnswerSubmit: (selectedOption: number, subAnswers?: { subQuestionId: number; selectedOption: number; isCorrect: boolean; score: number; }[]) => void;
+  quizId?: string;
 }
 
-export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) => {
+export const QuestionCard = ({ question, onAnswerSubmit, quizId }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [subAnswers, setSubAnswers] = useState<{[key: number]: number}>({});
-  const [showMainExplanation, setShowMainExplanation] = useState(false);
-  const [submittedSubQuestions, setSubmittedSubQuestions] = useState<Set<number>>(new Set());
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
-  const [mainQuestionSubmitted, setMainQuestionSubmitted] = useState(false);
-
-  const playSound = (isCorrect: boolean) => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      if (isCorrect) {
-        // Success sound - louder ascending notes
-        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-        
-        gainNode.gain.setValueAtTime(0.8, audioContext.currentTime); // Increased from 0.3
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6); // Longer duration
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.6);
-      } else {
-        // Error sound - louder descending low notes
-        oscillator.frequency.setValueAtTime(400, audioContext.currentTime); // Higher starting frequency
-        oscillator.frequency.setValueAtTime(250, audioContext.currentTime + 0.15);
-        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.3);
-        
-        gainNode.gain.setValueAtTime(0.9, audioContext.currentTime); // Increased from 0.4
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5); // Longer duration
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-      }
-    } catch (error) {
-      console.log('Audio context not available:', error);
-    }
-  };
-
-  const handleMainSubmit = () => {
-    if (selectedOption !== null) {
-      const isCorrect = question.options[selectedOption].is_correct;
-      setIsCorrectAnswer(isCorrect);
-      setShowMainExplanation(true);
-      setMainQuestionSubmitted(true);
-      setShowAnimation(true);
-      
-      // Play sound
-      playSound(isCorrect);
-      
-      // Hide animation after 2 seconds
-      setTimeout(() => {
-        setShowAnimation(false);
-      }, 2000);
-    }
-  };
-
-  const handleSubQuestionSubmit = (subQuestionId: number) => {
-    setSubmittedSubQuestions(prev => new Set([...prev, subQuestionId]));
-  };
-
-  const handleNextQuestion = () => {
-    if (selectedOption !== null) {
-      // Calculate sub-question answers if they exist
-      let processedSubAnswers;
-      if (question.sub_questions && question.sub_questions.length > 0) {
-        processedSubAnswers = question.sub_questions.map(subQ => {
-          const selectedSubOption = subAnswers[subQ.id];
-          const isCorrect = selectedSubOption !== undefined ? subQ.options[selectedSubOption].is_correct : false;
-          const score = selectedSubOption !== undefined ? 
-            (subQ.options[selectedSubOption].score || (isCorrect ? 100 : -50)) : 0;
-          
-          return {
-            subQuestionId: subQ.id,
-            selectedOption: selectedSubOption || 0,
-            isCorrect,
-            score
-          };
-        });
-      }
-
-      onAnswerSubmit(selectedOption, processedSubAnswers);
-      setSelectedOption(null);
-      setSubAnswers({});
-      setShowMainExplanation(false);
-      setSubmittedSubQuestions(new Set());
-      setShowAnimation(false);
-      setMainQuestionSubmitted(false);
-    }
-  };
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [subAnswers, setSubAnswers] = useState<{ [key: number]: { selectedOption: number; isCorrect: boolean; score: number; } }>({});
+  const [answeredSubQuestions, setAnsweredSubQuestions] = useState<Set<number>>(new Set());
 
   const handleOptionClick = (index: number) => {
-    if (showMainExplanation) {
-      // Play sound for clicking on options after answer is submitted
-      const isCorrect = question.options[index].is_correct;
-      console.log(`Playing sound for option ${index}, isCorrect: ${isCorrect}`);
-      playSound(isCorrect);
-    } else {
+    if (!showExplanation) {
       setSelectedOption(index);
     }
   };
 
-  const handleSubAnswerSelect = (subQuestionId: number, option: number) => {
+  const handleSubAnswerSubmit = (subQuestionId: number, selectedOption: number) => {
+    const subQuestion = question.sub_questions?.find(sq => sq.id === subQuestionId);
+    if (!subQuestion) return;
+
+    const isCorrect = subQuestion.options[selectedOption].is_correct;
+    const score = isCorrect ? 50 : -25; // Sub-questions have lower scores
+
     setSubAnswers(prev => ({
       ...prev,
-      [subQuestionId]: option
+      [subQuestionId]: { selectedOption, isCorrect, score }
     }));
+
+    setAnsweredSubQuestions(prev => new Set(prev).add(subQuestionId));
   };
 
-  const allSubQuestionsSubmitted = !question.sub_questions || 
-    question.sub_questions.every(subQ => submittedSubQuestions.has(subQ.id));
+  const handleSubmit = () => {
+    if (selectedOption === null) return;
 
-  const canShowNextButton = mainQuestionSubmitted && allSubQuestionsSubmitted;
+    setShowExplanation(true);
+    
+    // Collect sub-answers if any
+    const subAnswersList = question.sub_questions?.map(subQ => ({
+      subQuestionId: subQ.id,
+      selectedOption: subAnswers[subQ.id]?.selectedOption || 0,
+      isCorrect: subAnswers[subQ.id]?.isCorrect || false,
+      score: subAnswers[subQ.id]?.score || 0,
+    }));
+
+    onAnswerSubmit(selectedOption, subAnswersList);
+  };
+
+  const handleSubOptionSelect = (subQuestionId: number, optionIndex: number) => {
+    // This is handled by SubQuestionCard
+  };
+
+  const allSubQuestionsAnswered = question.sub_questions 
+    ? question.sub_questions.every(sq => answeredSubQuestions.has(sq.id))
+    : true;
 
   return (
-    <Card className="w-full relative">
-      {showAnimation && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20 backdrop-blur-sm">
-          <div className={`animate-bounce text-6xl ${isCorrectAnswer ? 'animate-pulse' : ''}`}>
-            {isCorrectAnswer ? (
-              <PartyPopper className="w-24 h-24 text-green-500 animate-spin" />
-            ) : (
-              <ThumbsDown className="w-24 h-24 text-red-500 animate-pulse" />
-            )}
-          </div>
+    <Card className="w-full">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start gap-4">
+          <CardTitle className="text-xl leading-relaxed text-foreground flex-1">
+            {question.question_text}
+          </CardTitle>
+          <QuestionCommentsDialog
+            quizId={quizId}
+            questionId={question.id}
+            questionText={question.question_text}
+          />
         </div>
-      )}
-      
-      <CardHeader>
-        <CardTitle className="text-xl text-foregroundleading-relaxed">
-          {question.question_text}
-        </CardTitle>
       </CardHeader>
       <CardContent>
         <RadioGroup
@@ -162,8 +88,8 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
           {question.options.map((option, index) => (
             <div 
               key={index} 
-              className={`flex items-center text-white space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                showMainExplanation
+              className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                showExplanation
                   ? option.is_correct
                     ? 'bg-background border-green-500'
                     : selectedOption === index
@@ -178,7 +104,7 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               <RadioGroupItem 
                 value={index.toString()} 
                 id={`option-${index}`}
-                disabled={showMainExplanation}
+                disabled={showExplanation}
               />
               <Label 
                 htmlFor={`option-${index}`} 
@@ -186,61 +112,45 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
               >
                 {option.text}
               </Label>
-              {showMainExplanation && option.is_correct && (
+              {showExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium">✓ Correct</span>
               )}
-              {showMainExplanation && selectedOption === index && !option.is_correct && (
+              {showExplanation && selectedOption === index && !option.is_correct && (
                 <span className="text-red-600 font-medium">✗ Incorrect</span>
               )}
             </div>
           ))}
         </RadioGroup>
 
-        {showMainExplanation && (
-          <div className="mt-6 p-4 bg-background border-l-4 border-blue-500 rounded-r-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Explanation:</h4>
+        {/* Sub-questions */}
+        {question.sub_questions && question.sub_questions.map((subQuestion) => (
+          <SubQuestionCard
+            key={subQuestion.id}
+            subQuestion={subQuestion}
+            onAnswerSubmit={(selectedOption) => handleSubAnswerSubmit(subQuestion.id, selectedOption)}
+            showExplanation={showExplanation}
+            selectedOption={subAnswers[subQuestion.id]?.selectedOption ?? null}
+            onOptionSelect={(option) => handleSubOptionSelect(subQuestion.id, option)}
+          />
+        ))}
+
+        {/* Main question explanation */}
+        {showExplanation && (
+          <div className="mt-4 p-4 bg-background border-l-4 border-blue-400 rounded-r-lg">
+            <h5 className="font-medium text-blue-900 mb-2">Explanation:</h5>
             <p className="text-blue-800">{question.explanation}</p>
           </div>
         )}
 
-        {/* Main question submit button */}
-        {!mainQuestionSubmitted && (
+        {/* Submit button */}
+        {!showExplanation && (
           <div className="mt-6">
             <Button
-              onClick={handleMainSubmit}
-              disabled={selectedOption === null}
+              onClick={handleSubmit}
+              disabled={selectedOption === null || !allSubQuestionsAnswered}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
             >
-              Submit Main Answer
-            </Button>
-          </div>
-        )}
-
-        {/* Sub-questions section */}
-        {question.sub_questions && question.sub_questions.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-lg font-medium text-gray-800 mb-3">Sub-questions:</h4>
-            {question.sub_questions.map((subQuestion) => (
-              <SubQuestionCard
-                key={subQuestion.id}
-                subQuestion={subQuestion}
-                onAnswerSubmit={() => handleSubQuestionSubmit(subQuestion.id)}
-                showExplanation={submittedSubQuestions.has(subQuestion.id)}
-                selectedOption={subAnswers[subQuestion.id] ?? null}
-                onOptionSelect={(option) => handleSubAnswerSelect(subQuestion.id, option)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Next question button - only shown when both main and all sub-questions are submitted */}
-        {canShowNextButton && (
-          <div className="mt-6">
-            <Button
-              onClick={handleNextQuestion}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
-            >
-              Next Question
+              Submit Answer
             </Button>
           </div>
         )}
