@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 interface QuizContainerProps {
   quizData: QuizData;
+  quizId?: string;
 }
 
 // Fisher-Yates shuffle algorithm
@@ -22,7 +23,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-export const QuizContainer = ({ quizData }: QuizContainerProps) => {
+export const QuizContainer = ({ quizData, quizId }: QuizContainerProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -167,7 +168,7 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
       <QuestionCard
         question={shuffledQuizData.questions[currentQuestionIndex]}
         onAnswerSubmit={handleAnswerSubmit}
-        quizId={quizData.id}
+        quizId={quizId}
       />
     </div>
   );
