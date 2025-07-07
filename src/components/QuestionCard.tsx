@@ -12,13 +12,15 @@ interface QuestionCardProps {
   question: QuizQuestion;
   onAnswerSubmit: (selectedOption: number, subAnswers?: { subQuestionId: number; selectedOption: number; isCorrect: boolean; score: number; }[]) => void;
   quizId?: string;
+  isLastQuestion?: boolean;
 }
 
-export const QuestionCard = ({ question, onAnswerSubmit, quizId }: QuestionCardProps) => {
+export const QuestionCard = ({ question, onAnswerSubmit, quizId, isLastQuestion }: QuestionCardProps) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [subAnswers, setSubAnswers] = useState<{ [key: number]: { selectedOption: number; isCorrect: boolean; score: number; } }>({});
   const [answeredSubQuestions, setAnsweredSubQuestions] = useState<Set<number>>(new Set());
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleOptionClick = (index: number) => {
     if (!showExplanation) {
@@ -45,6 +47,21 @@ export const QuestionCard = ({ question, onAnswerSubmit, quizId }: QuestionCardP
     if (selectedOption === null) return;
 
     setShowExplanation(true);
+    setHasSubmitted(true);
+    
+    // Collect sub-answers if any
+    const subAnswersList = question.sub_questions?.map(subQ => ({
+      subQuestionId: subQ.id,
+      selectedOption: subAnswers[subQ.id]?.selectedOption || 0,
+      isCorrect: subAnswers[subQ.id]?.isCorrect || false,
+      score: subAnswers[subQ.id]?.score || 0,
+    }));
+
+    // Don't call onAnswerSubmit immediately - wait for user to click Next
+  };
+
+  const handleNext = () => {
+    if (selectedOption === null) return;
     
     // Collect sub-answers if any
     const subAnswersList = question.sub_questions?.map(subQ => ({
@@ -142,9 +159,9 @@ export const QuestionCard = ({ question, onAnswerSubmit, quizId }: QuestionCardP
           </div>
         )}
 
-        {/* Submit button */}
-        {!showExplanation && (
-          <div className="mt-6">
+        {/* Submit button or Next button */}
+        <div className="mt-6">
+          {!hasSubmitted ? (
             <Button
               onClick={handleSubmit}
               disabled={selectedOption === null || !allSubQuestionsAnswered}
@@ -152,8 +169,15 @@ export const QuestionCard = ({ question, onAnswerSubmit, quizId }: QuestionCardP
             >
               Submit Answer
             </Button>
-          </div>
-        )}
+          ) : (
+            <Button
+              onClick={handleNext}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
+            >
+              {isLastQuestion ? 'Finish Quiz' : 'Next Question'}
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
