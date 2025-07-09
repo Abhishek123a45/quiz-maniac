@@ -126,6 +126,7 @@ export default function Index() {
     conceptData: ConceptData;
     title: string;
     description: string;
+    quizId?: string;
   } | null>(null);
 
   const handleCreateCustomQuiz = (quizData: QuizData) => {
@@ -145,7 +146,8 @@ export default function Index() {
       setConceptQuizData({
         conceptData,
         title: quizData.quiz_title,
-        description: quizData.description
+        description: quizData.description,
+        quizId: quizData.quizId
       });
       setCurrentView('concept-quiz');
     } else {
@@ -214,6 +216,7 @@ export default function Index() {
               conceptData={conceptQuizData.conceptData}
               title={conceptQuizData.title}
               description={conceptQuizData.description}
+              quizId={conceptQuizData.quizId}
             />
           )}
         </div>

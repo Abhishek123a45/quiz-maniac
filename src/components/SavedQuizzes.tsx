@@ -310,11 +310,19 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                             : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
                           }
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs">Attempts:</span>
-                          <Badge variant="outline" className="text-xs px-2 py-0">
-                            {quiz.attempt_count || 0}
-                          </Badge>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">Attempts:</span>
+                            <Badge variant="outline" className="text-xs px-2 py-0">
+                              {quiz.attempt_count || 0}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">Best Score:</span>
+                            <Badge variant="secondary" className="text-xs px-2 py-0">
+                              {quiz.max_score || 0}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-2">

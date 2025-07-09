@@ -16,6 +16,7 @@ interface SavedQuiz {
   user_id: string | null;
   quiz_type: 'regular' | 'concept';
   attempt_count: number;
+  max_score: number;
 }
 
 export const useQuizzes = (folderId?: string | null) => {
@@ -226,6 +227,20 @@ export const useQuizzes = (folderId?: string | null) => {
     },
   });
 
+  // Update max score mutation
+  const updateMaxScoreMutation = useMutation({
+    mutationFn: async ({ quizId, score }: { quizId: string; score: number }) => {
+      const { error } = await supabase.rpc('update_quiz_max_score', { quiz_id: quizId, new_score: score });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+    },
+    onError: (error) => {
+      console.error('Error updating max score:', error);
+    },
+  });
+
   return {
     quizzes,
     isLoading,
@@ -235,10 +250,12 @@ export const useQuizzes = (folderId?: string | null) => {
     moveQuiz: moveQuizMutation.mutate,
     deleteQuiz: deleteQuizMutation.mutate,
     incrementAttempt: incrementAttemptMutation.mutate,
+    updateMaxScore: updateMaxScoreMutation.mutate,
     isSaving: saveQuizMutation.isPending,
     isUpdating: updateQuizMutation.isPending,
     isMoving: moveQuizMutation.isPending,
     isDeleting: deleteQuizMutation.isPending,
     isIncrementingAttempt: incrementAttemptMutation.isPending,
+    isUpdatingMaxScore: updateMaxScoreMutation.isPending,
   };
 };

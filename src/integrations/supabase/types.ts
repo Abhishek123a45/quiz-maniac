@@ -97,6 +97,7 @@ export type Database = {
           description: string
           folder_id: string | null
           id: string
+          max_score: number
           questions: Json
           quiz_title: string
           quiz_type: string | null
@@ -109,6 +110,7 @@ export type Database = {
           description: string
           folder_id?: string | null
           id?: string
+          max_score?: number
           questions: Json
           quiz_title: string
           quiz_type?: string | null
@@ -121,6 +123,7 @@ export type Database = {
           description?: string
           folder_id?: string | null
           id?: string
+          max_score?: number
           questions?: Json
           quiz_title?: string
           quiz_type?: string | null
@@ -144,6 +147,10 @@ export type Database = {
     Functions: {
       increment_quiz_attempt_count: {
         Args: { quiz_id: string }
+        Returns: undefined
+      }
+      update_quiz_max_score: {
+        Args: { quiz_id: string; new_score: number }
         Returns: undefined
       }
     }

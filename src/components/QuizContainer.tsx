@@ -5,9 +5,10 @@ import { ResultsCard } from "./ResultsCard";
 import { RacingCarProgress } from "./RacingCarProgress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuizzes } from "@/hooks/useQuizzes";
 
 interface QuizContainerProps {
-  quizData: QuizData;
+  quizData: QuizData & { quizId?: string };
 }
 
 // Fisher-Yates shuffle algorithm
@@ -21,6 +22,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export const QuizContainer = ({ quizData }: QuizContainerProps) => {
+  const { updateMaxScore } = useQuizzes();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -76,6 +78,10 @@ export const QuizContainer = ({ quizData }: QuizContainerProps) => {
     if (currentQuestionIndex < shuffledQuizData.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
+      // Update max score when quiz is completed
+      if (quizData.quizId) {
+        updateMaxScore({ quizId: quizData.quizId, score: totalScore });
+      }
       setShowResults(true);
     }
   };

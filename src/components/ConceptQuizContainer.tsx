@@ -7,15 +7,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { PartyPopper, ThumbsDown, ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { useQuizzes } from "@/hooks/useQuizzes";
 
 interface ConceptQuizContainerProps {
   conceptData: ConceptData;
   title: string;
   description: string;
   onBackToHome?: () => void;
+  quizId?: string;
 }
 
-export const ConceptQuizContainer = ({ conceptData, title, description, onBackToHome }: ConceptQuizContainerProps) => {
+export const ConceptQuizContainer = ({ conceptData, title, description, onBackToHome, quizId }: ConceptQuizContainerProps) => {
+  const { updateMaxScore } = useQuizzes();
   const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
   const [currentStage, setCurrentStage] = useState<'explanation' | 'questions' | 'sub-explanations' | 'sub-questions' | 'results'>('explanation');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -317,6 +320,10 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
       setShowQuestionResult(false);
       setShowSubExplanation(true);
     } else {
+      // Update max score when concept quiz is completed
+      if (quizId) {
+        updateMaxScore({ quizId, score: totalScore });
+      }
       setCurrentStage('results');
     }
   };
