@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 interface SavedQuizzesProps {
-  onQuizSelect: (quiz: QuizData) => void;
+  onQuizSelect: (quiz: QuizData & { quizId?: string }) => void;
   onBack: () => void;
 }
 
@@ -34,7 +34,7 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { quizzes, isLoading: quizzesLoading, deleteQuiz, moveQuiz, updateQuiz, isDeleting, isMoving, isUpdating } = useQuizzes(currentFolderId);
+  const { quizzes, isLoading: quizzesLoading, deleteQuiz, moveQuiz, updateQuiz, incrementAttempt, isDeleting, isMoving, isUpdating } = useQuizzes(currentFolderId);
   const { 
     folderTree, 
     folders = [], 
@@ -65,11 +65,14 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
   };
 
   const handlePlayQuiz = (quiz: any) => {
-    const quizData: QuizData = {
+    const quizData: QuizData & { quizId?: string } = {
       quiz_title: quiz.quiz_title,
       description: quiz.description,
       questions: quiz.questions,
+      quizId: quiz.id,
     };
+    // Increment attempt count when quiz is played
+    incrementAttempt(quiz.id);
     onQuizSelect(quizData);
   };
 
@@ -300,11 +303,19 @@ export const SavedQuizzes = ({ onQuizSelect, onBack }: SavedQuizzesProps) => {
                       <p className="text-sm mb-4 line-clamp-3 ">
                         {quiz.description}
                       </p>
-                      <div className="text-sm text-muted-foreground mb-4">
-                        {quiz.quiz_type === 'concept' 
-                          ? `${getConceptCount(quiz)} concept${getConceptCount(quiz) !== 1 ? 's' : ''}`
-                          : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
-                        }
+                      <div className="text-sm text-muted-foreground mb-4 space-y-1">
+                        <div>
+                          {quiz.quiz_type === 'concept' 
+                            ? `${getConceptCount(quiz)} concept${getConceptCount(quiz) !== 1 ? 's' : ''}`
+                            : `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''}`
+                          }
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs">Attempts:</span>
+                          <Badge variant="outline" className="text-xs px-2 py-0">
+                            {quiz.attempt_count || 0}
+                          </Badge>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button

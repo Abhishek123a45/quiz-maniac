@@ -15,6 +15,7 @@ interface SavedQuiz {
   folder_id: string | null;
   user_id: string | null;
   quiz_type: 'regular' | 'concept';
+  attempt_count: number;
 }
 
 export const useQuizzes = (folderId?: string | null) => {
@@ -211,6 +212,20 @@ export const useQuizzes = (folderId?: string | null) => {
     },
   });
 
+  // Increment attempt count mutation
+  const incrementAttemptMutation = useMutation({
+    mutationFn: async (quizId: string) => {
+      const { error } = await supabase.rpc('increment_quiz_attempt_count', { quiz_id: quizId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+    },
+    onError: (error) => {
+      console.error('Error incrementing attempt count:', error);
+    },
+  });
+
   return {
     quizzes,
     isLoading,
@@ -219,9 +234,11 @@ export const useQuizzes = (folderId?: string | null) => {
     updateQuiz: updateQuizMutation.mutate,
     moveQuiz: moveQuizMutation.mutate,
     deleteQuiz: deleteQuizMutation.mutate,
+    incrementAttempt: incrementAttemptMutation.mutate,
     isSaving: saveQuizMutation.isPending,
     isUpdating: updateQuizMutation.isPending,
     isMoving: moveQuizMutation.isPending,
     isDeleting: deleteQuizMutation.isPending,
+    isIncrementingAttempt: incrementAttemptMutation.isPending,
   };
 };

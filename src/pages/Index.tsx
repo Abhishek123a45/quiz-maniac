@@ -138,7 +138,7 @@ export default function Index() {
     setCurrentView('concept-quiz');
   };
 
-  const handleSelectSavedQuiz = (quizData: QuizData) => {
+  const handleSelectSavedQuiz = (quizData: QuizData & { quizId?: string }) => {
     // Check if it's a concept quiz
     if (quizData.questions.length > 0 && (quizData.questions[0] as any).concept_data) {
       const conceptData = (quizData.questions[0] as any).concept_data;
