@@ -1,16 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { QuizData, UserAnswer } from "@/types/quiz";
 import { QuestionCard } from "./QuestionCard";
 import { ResultsCard } from "./ResultsCard";
 import { RacingCarProgress } from "./RacingCarProgress";
-import { AnimatedScore } from "./AnimatedScore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface QuizContainerProps {
   quizData: QuizData;
-  quizId?: string;
 }
 
 // Fisher-Yates shuffle algorithm
@@ -23,7 +20,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-export const QuizContainer = ({ quizData, quizId }: QuizContainerProps) => {
+export const QuizContainer = ({ quizData }: QuizContainerProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -157,10 +154,12 @@ export const QuizContainer = ({ quizData, quizId }: QuizContainerProps) => {
           currentQuestion={currentQuestionIndex + 1}
           totalQuestions={totalQuestions}
         />
-        {/* Show current score with animation */}
+        {/* Show current score */}
         <div className="text-center mt-2">
           <span className="text-sm text-gray-600">
-            Current Score: <AnimatedScore score={totalScore} className="text-lg" /> points
+            Current Score: <span className="font-semibold text-purple-600">
+             {totalScore}
+            </span> points
           </span>
         </div>
       </div>
@@ -168,7 +167,6 @@ export const QuizContainer = ({ quizData, quizId }: QuizContainerProps) => {
       <QuestionCard
         question={shuffledQuizData.questions[currentQuestionIndex]}
         onAnswerSubmit={handleAnswerSubmit}
-        quizId={quizId}
       />
     </div>
   );
