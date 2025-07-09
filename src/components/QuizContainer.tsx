@@ -169,7 +169,6 @@ export const QuizContainer = ({ quizData, quizId }: QuizContainerProps) => {
         question={shuffledQuizData.questions[currentQuestionIndex]}
         onAnswerSubmit={handleAnswerSubmit}
         quizId={quizId}
-        isLastQuestion={currentQuestionIndex === shuffledQuizData.questions.length - 1}
       />
     </div>
   );
