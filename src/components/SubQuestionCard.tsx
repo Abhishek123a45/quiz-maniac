@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SubQuestion } from "@/types/quiz";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ interface SubQuestionCardProps {
   showExplanation: boolean;
   selectedOption: number | null;
   onOptionSelect: (option: number) => void;
+  parentQuestionId: number; // new prop
 }
 
 export const SubQuestionCard = ({ 
@@ -18,9 +19,14 @@ export const SubQuestionCard = ({
   onAnswerSubmit, 
   showExplanation, 
   selectedOption,
-  onOptionSelect 
+  onOptionSelect,
+  parentQuestionId
 }: SubQuestionCardProps) => {
   const [localShowExplanation, setLocalShowExplanation] = useState(false);
+
+  useEffect(() => {
+    setLocalShowExplanation(false);
+  }, [parentQuestionId, subQuestion.id]);
 
   const handleOptionClick = (index: number) => {
     if (!showExplanation && !localShowExplanation) {

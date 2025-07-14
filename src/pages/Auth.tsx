@@ -45,6 +45,7 @@ export default function AuthPage() {
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Login success", description: "Welcome back!" });
+        navigate("/"); // Redirect to home after login
       }
     } else {
       const { error } = await supabase.auth.signUp({
@@ -57,6 +58,7 @@ export default function AuthPage() {
         toast({ title: "Signup failed", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Signup success", description: "Check your email to confirm your account." });
+        navigate("/"); // Redirect to home after signup
       }
     }
     setPending(false);

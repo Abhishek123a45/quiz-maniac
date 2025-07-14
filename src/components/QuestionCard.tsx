@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuizQuestion } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,16 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
   const [showAnimation, setShowAnimation] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
   const [mainQuestionSubmitted, setMainQuestionSubmitted] = useState(false);
+
+  useEffect(() => {
+    setSelectedOption(null);
+    setSubAnswers({});
+    setShowMainExplanation(false);
+    setSubmittedSubQuestions(new Set());
+    setShowAnimation(false);
+    setIsCorrectAnswer(false);
+    setMainQuestionSubmitted(false);
+  }, [question.id]);
 
   const playSound = (isCorrect: boolean) => {
     try {
@@ -222,8 +232,9 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
             <h4 className="text-lg font-medium text-gray-800 mb-3">Sub-questions:</h4>
             {question.sub_questions.map((subQuestion) => (
               <SubQuestionCard
-                key={subQuestion.id}
+                key={question.id + '-' + subQuestion.id}
                 subQuestion={subQuestion}
+                parentQuestionId={question.id}
                 onAnswerSubmit={() => handleSubQuestionSubmit(subQuestion.id)}
                 showExplanation={submittedSubQuestions.has(subQuestion.id)}
                 selectedOption={subAnswers[subQuestion.id] ?? null}
