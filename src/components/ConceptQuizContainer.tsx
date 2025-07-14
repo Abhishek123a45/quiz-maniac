@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { PartyPopper, ThumbsDown, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { useQuizzes } from "@/hooks/useQuizzes";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConceptQuizContainerProps {
   conceptData: ConceptData;
@@ -18,6 +19,7 @@ interface ConceptQuizContainerProps {
 }
 
 export const ConceptQuizContainer = ({ conceptData, title, description, onBackToHome, quizId }: ConceptQuizContainerProps) => {
+  const isMobile = useIsMobile();
   const { updateMaxScore } = useQuizzes();
   const [currentConceptIndex, setCurrentConceptIndex] = useState(0);
   const [currentStage, setCurrentStage] = useState<'explanation' | 'questions' | 'sub-explanations' | 'sub-questions' | 'results'>('explanation');
@@ -404,14 +406,12 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
 
   if (currentStage === 'results') {
     return (
-      <Card className="w-full max-w-4xl mx-auto">
+      <Card className={`w-full max-w-4xl mx-auto ${isMobile ? 'px-2 py-2' : 'px-8 py-8'}`}>
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-purple-900">
-            Quiz Complete!
-          </CardTitle>
+          <CardTitle className={`text-3xl font-bold text-purple-900 ${isMobile ? 'text-2xl' : ''}`}>Quiz Complete!</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-6">
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-2' : 'md:grid-cols-3 gap-4'}`}>
             <Card className="p-4">
               <h3 className="text-lg font-semibold text-gray-800">Score</h3>
               <p className="text-2xl font-bold text-purple-600">{correctAnswers}/{userAnswers.length}</p>
@@ -428,13 +428,9 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
             </Card>
           </div>
           <div className="flex gap-3 justify-center">
-            <Button onClick={restartQuiz} className="bg-purple-600 hover:bg-purple-700 text-white">
-              Restart Quiz
-            </Button>
+            <Button onClick={restartQuiz} className={`bg-purple-600 hover:bg-purple-700 text-white ${isMobile ? 'px-4 py-2 text-base' : ''}`}>Restart Quiz</Button>
             {onBackToHome && (
-              <Button onClick={onBackToHome} variant="outline">
-                Back to Home
-              </Button>
+              <Button onClick={onBackToHome} variant="outline">Back to Home</Button>
             )}
           </div>
         </CardContent>
@@ -444,25 +440,21 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
 
   if (currentStage === 'explanation') {
     return (
-      <Card className="w-full max-w-4xl mx-auto">
+      <Card className={`w-full max-w-4xl mx-auto ${isMobile ? 'px-2 py-2' : 'px-8 py-8'}`}>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-purple-900">
-            {currentConcept.name}
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Concept {currentConceptIndex + 1} of {totalConcepts}
-          </p>
+          <CardTitle className={`text-2xl font-bold text-purple-900 ${isMobile ? 'text-xl' : ''}`}>{currentConcept.name}</CardTitle>
+          <p className={`text-sm text-gray-600 mt-2 ${isMobile ? 'text-xs' : ''}`}>Concept {currentConceptIndex + 1} of {totalConcepts}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-background border-l-4 border-purple-500 rounded-r-lg">
-            <h4 className="font-medium text-purple-900 mb-3">Concept Explanation:</h4>
-            <p className="text-purple-800 leading-relaxed">{currentConcept.explanation}</p>
+          <div className={`p-6 bg-background border-l-4 border-purple-500 rounded-r-lg ${isMobile ? 'p-2' : ''}`}>
+            <h4 className={`font-medium text-purple-900 mb-3 ${isMobile ? 'text-base' : ''}`}>Concept Explanation:</h4>
+            <p className={`text-purple-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>{currentConcept.explanation}</p>
           </div>
           <div className="text-center">
             <Button 
               onClick={handleStartQuestions}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+              className={`bg-purple-600 hover:bg-purple-700 text-white ${isMobile ? 'px-4 py-2 text-base' : 'px-8 py-3'}`}
             >
               {(currentConcept.questions && currentConcept.questions.length > 0) 
                 ? "Start Questions on This Concept" 
@@ -478,25 +470,21 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     const currentSubExp = currentConcept.sub_explanations![currentSubExplanationIndex];
     
     return (
-      <Card className="w-full max-w-4xl mx-auto">
+      <Card className={`w-full max-w-4xl mx-auto ${isMobile ? 'px-2 py-2' : 'px-8 py-8'}`}>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl font-bold text-purple-900">
-            {currentSubExp.title}
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}
-          </p>
+          <CardTitle className={`text-xl font-bold text-purple-900 ${isMobile ? 'text-lg' : ''}`}>{currentSubExp.title}</CardTitle>
+          <p className={`text-sm text-gray-600 mt-2 ${isMobile ? 'text-xs' : ''}`}>Sub-topic {currentSubExplanationIndex + 1} of {currentConcept.sub_explanations!.length} in {currentConcept.name}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <NavigationControls />
-          <div className="p-6 bg-background border-l-4 border-blue-500 rounded-r-lg">
-            <h4 className="font-medium text-blue-900 mb-3">Sub-topic Explanation:</h4>
-            <p className="text-blue-800 leading-relaxed">{currentSubExp.explanation}</p>
+          <div className={`p-6 bg-background border-l-4 border-blue-500 rounded-r-lg ${isMobile ? 'p-2' : ''}`}>
+            <h4 className={`font-medium text-blue-900 mb-3 ${isMobile ? 'text-base' : ''}`}>Sub-topic Explanation:</h4>
+            <p className={`text-blue-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>{currentSubExp.explanation}</p>
           </div>
           <div className="text-center">
             <Button 
               onClick={handleContinueToSubQuestions}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+              className={`bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'px-4 py-2 text-base' : 'px-8 py-3'}`}
             >
               {(currentSubExp.questions && currentSubExp.questions.length > 0) 
                 ? "Continue to Questions" 
@@ -524,7 +512,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
     : currentConcept.sub_explanations![currentSubExplanationIndex].questions![currentQuestionIndex];
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className={`w-full max-w-4xl mx-auto ${isMobile ? 'px-2 py-2' : 'px-8 py-8'}`}>
       {showAnimation && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20 backdrop-blur-sm">
           <div className={`animate-bounce text-6xl ${isCorrectAnswer ? 'animate-pulse' : ''}`}>

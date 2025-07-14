@@ -120,128 +120,7 @@ export default function Index() {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [currentView, setCurrentView] = useState<'home' | 'sample' | 'create' | 'saved' | 'concept-builder' | 'concept-quiz'>('home');
-  const [customQuizData, setCustomQuizData] = useState<QuizData | null>(null);
-  const [conceptQuizData, setConceptQuizData] = useState<{
-    conceptData: ConceptData;
-    title: string;
-    description: string;
-    quizId?: string;
-  } | null>(null);
-
-  const handleCreateCustomQuiz = (quizData: QuizData) => {
-    setCustomQuizData(quizData);
-    setCurrentView('sample');
-  };
-
-  const handleCreateConceptQuiz = (conceptData: ConceptData, title: string, description: string) => {
-    setConceptQuizData({ conceptData, title, description });
-    setCurrentView('concept-quiz');
-  };
-
-  const handleSelectSavedQuiz = (quizData: QuizData & { quizId?: string }) => {
-    // Check if it's a concept quiz
-    if (quizData.questions.length > 0 && (quizData.questions[0] as any).concept_data) {
-      const conceptData = (quizData.questions[0] as any).concept_data;
-      setConceptQuizData({
-        conceptData,
-        title: quizData.quiz_title,
-        description: quizData.description,
-        quizId: quizData.quizId
-      });
-      setCurrentView('concept-quiz');
-    } else {
-      setCustomQuizData(quizData);
-      setCurrentView('sample');
-    }
-  };
-
-  const handleBackToHome = () => {
-    setCurrentView('home');
-    setCustomQuizData(null);
-    setConceptQuizData(null);
-  };
-
-  if (currentView === 'create') {
-    return (
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
-        <div className="container mx-auto">
-          <QuizCreator 
-            onQuizCreate={handleCreateCustomQuiz}
-            onCancel={handleBackToHome}
-            onBack={handleBackToHome}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (currentView === 'concept-builder') {
-    return (
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
-        <div className="container mx-auto">
-          <ConceptBuilder 
-            onConceptCreate={handleCreateConceptQuiz}
-            onCancel={handleBackToHome}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (currentView === 'saved') {
-    return (
-      <SavedQuizzes 
-        onQuizSelect={handleSelectSavedQuiz}
-        onBack={handleBackToHome}
-      />
-    );
-  }
-
-  if (currentView === 'concept-quiz') {
-    return (
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
-        <div className="container mx-auto">
-          <div className="mb-4">
-            <Button
-              onClick={handleBackToHome}
-              variant="outline"
-              className="mb-4"
-            >
-              ← Back to Home
-            </Button>
-          </div>
-          {conceptQuizData && (
-            <ConceptQuizContainer 
-              conceptData={conceptQuizData.conceptData}
-              title={conceptQuizData.title}
-              description={conceptQuizData.description}
-              quizId={conceptQuizData.quizId}
-            />
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (currentView === 'sample') {
-    return (
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
-        <div className="container mx-auto">
-          <div className="mb-4">
-            <Button
-              onClick={handleBackToHome}
-              variant="outline"
-              className="mb-4"
-            >
-              ← Back to Home
-            </Button>
-          </div>
-          <QuizContainer quizData={customQuizData || sampleQuizData} />
-        </div>
-      </div>
-    );
-  }
+  // Remove currentView and related state/handlers
 
   return (
     <main>
@@ -259,21 +138,6 @@ export default function Index() {
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
-                  <h3 className="text-xl font-semibold text-foreground mb-3">
-                    Try Sample Quiz
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Experience our quiz with a sample about quadratic equations with complex coefficients
-                  </p>
-                  <Button
-                    onClick={() => setCurrentView('sample')}
-                    className="w-full"
-                  >
-                    Start Sample Quiz
-                  </Button>
-                </Card> */}
-
                 <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
                   <h3 className="text-xl font-semibold text-foreground mb-3">
                     Create Custom Quiz
@@ -282,7 +146,7 @@ export default function Index() {
                     Input your own quiz data in JSON format and create a personalized quiz
                   </p>
                   <Button
-                    onClick={() => setCurrentView('create')}
+                    onClick={() => navigate('create')}
                     className="w-full"
                     variant="default"
                   >
@@ -290,7 +154,6 @@ export default function Index() {
                     Create New Quiz
                   </Button>
                 </Card>
-
                 <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
                   <h3 className="text-xl font-semibold text-foreground mb-3">
                     Concept Builder
@@ -299,7 +162,7 @@ export default function Index() {
                     Create concept-based quizzes with explanations and structured learning
                   </p>
                   <Button
-                    onClick={() => setCurrentView('concept-builder')}
+                    onClick={() => navigate('concept-builder')}
                     className="w-full"
                     variant="greenPrimary"
                   >
@@ -307,7 +170,6 @@ export default function Index() {
                     Build Concepts
                   </Button>
                 </Card>
-
                 <Card className="p-6 hover:shadow-lg transition-shadow bg-card text-card-foreground border-border">
                   <h3 className="text-xl font-semibold text-foreground mb-3">
                     Saved Quizzes
@@ -316,7 +178,7 @@ export default function Index() {
                     Access your previously saved quizzes and play them anytime
                   </p>
                   <Button
-                    onClick={() => setCurrentView('saved')}
+                    onClick={() => navigate('saved')}
                     className="w-full"
                     variant="destructive"
                   >
@@ -325,7 +187,6 @@ export default function Index() {
                   </Button>
                 </Card>
               </div>
-
               <div className="mt-8 p-4 bg-muted rounded-lg border border-border">
                 <h4 className="font-medium text-foreground mb-2">Features:</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
@@ -339,6 +200,7 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
+          {/* Nested route content will render here */}
         </div>
       </div>
       <div className="flex items-center gap-2 absolute top-4 right-4">
@@ -349,7 +211,7 @@ export default function Index() {
               Log out
             </Button>
           ) : (
-            <Button variant="outline" onClick={() => navigate("/auth")}>
+            <Button variant="outline" onClick={() => navigate("/auth")}> 
               Log in / Sign up
             </Button>
           ))}
