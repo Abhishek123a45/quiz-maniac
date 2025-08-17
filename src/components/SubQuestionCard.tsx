@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { SubQuestion } from "@/types/quiz";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -47,7 +48,9 @@ export const SubQuestionCard = ({
     <Card className="w-full mt-4 border-l-4 ">
       <CardHeader className="pb-3">
         <CardTitle className="text-xl leading-relaxed text-foreground">
+          <ReactMarkdown>
             {subQuestion.question_text}
+          </ReactMarkdown>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -81,7 +84,9 @@ export const SubQuestionCard = ({
                 htmlFor={`sub-option-${subQuestion.id}-${index}`} 
                 className="flex-1 cursor-pointer text-foreground text-sm"
               >
-                {option.text}
+                <ReactMarkdown>
+                  {option.text}
+                </ReactMarkdown>
               </Label>
               {displayExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium text-sm">✓</span>
@@ -109,7 +114,11 @@ export const SubQuestionCard = ({
         {displayExplanation && (
           <div className="mt-4 p-3 bg-background border-l-4 border-blue-400 rounded-r-lg">
             <h5 className="font-medium text-blue-900 mb-1 text-sm">Explanation:</h5>
-            <p className="text-blue-800 text-sm">{subQuestion.explanation}</p>
+            <div className="text-blue-800 text-sm">
+              <ReactMarkdown>
+                {subQuestion.explanation}
+              </ReactMarkdown>
+            </div>
           </div>
         )}
       </CardContent>

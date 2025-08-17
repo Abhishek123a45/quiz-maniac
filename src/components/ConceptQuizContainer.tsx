@@ -1,5 +1,6 @@
 
 import { useState, useMemo } from "react";
+import ReactMarkdown from "react-markdown";
 import { ConceptData, ConceptAnswer } from "@/types/concept";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -449,7 +450,9 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
           <NavigationControls />
           <div className={`p-6 bg-background border-l-4 border-purple-500 rounded-r-lg ${isMobile ? 'p-2' : ''}`}>
             <h4 className={`font-medium text-purple-900 mb-3 ${isMobile ? 'text-base' : ''}`}>Concept Explanation:</h4>
-            <p className={`text-purple-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>{currentConcept.explanation}</p>
+            <div className={`text-purple-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+              <ReactMarkdown>{currentConcept.explanation}</ReactMarkdown>
+            </div>
           </div>
           <div className="text-center">
             <Button 
@@ -479,7 +482,9 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
           <NavigationControls />
           <div className={`p-6 bg-background border-l-4 border-blue-500 rounded-r-lg ${isMobile ? 'p-2' : ''}`}>
             <h4 className={`font-medium text-blue-900 mb-3 ${isMobile ? 'text-base' : ''}`}>Sub-topic Explanation:</h4>
-            <p className={`text-blue-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>{currentSubExp.explanation}</p>
+            <div className={`text-blue-800 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+              <ReactMarkdown>{currentSubExp.explanation}</ReactMarkdown>
+            </div>
           </div>
           <div className="text-center">
             <Button 
@@ -538,7 +543,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl text-foreground leading-relaxed">
-            {currentQuestion.question_text}
+            <ReactMarkdown>{currentQuestion.question_text}</ReactMarkdown>
           </CardTitle>
           <p className="text-sm text-gray-600">
             {currentStage === 'questions' ? 'Main Concept' : currentConcept.sub_explanations![currentSubExplanationIndex].title} • 
@@ -578,7 +583,7 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
                   htmlFor={`option-${index}`} 
                   className="flex-1 text-foreground cursor-pointer"
                 >
-                  {option.text}
+                  <ReactMarkdown>{option.text}</ReactMarkdown>
                 </Label>
                 {showQuestionResult && option.is_correct && (
                   <span className="text-green-600 font-medium">✓ Correct</span>
@@ -594,7 +599,9 @@ export const ConceptQuizContainer = ({ conceptData, title, description, onBackTo
           {showQuestionResult && currentQuestion.explanation && (
             <div className="mt-4 p-4 bg-background border-l-4 border-blue-400 rounded-r-lg">
               <h5 className="font-medium text-blue-900 mb-2">Explanation:</h5>
-              <p className="text-blue-800 text-sm leading-relaxed">{currentQuestion.explanation}</p>
+              <div className="text-blue-800 text-sm leading-relaxed">
+                <ReactMarkdown>{currentQuestion.explanation}</ReactMarkdown>
+              </div>
             </div>
           )}
 

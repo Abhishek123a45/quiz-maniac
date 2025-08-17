@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { QuizQuestion } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -159,8 +160,10 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
       )}
       
       <CardHeader>
-        <CardTitle className="text-xl text-foregroundleading-relaxed">
-          {question.question_text}
+        <CardTitle className="text-xl text-foreground leading-relaxed">
+          <ReactMarkdown>
+            {question.question_text}
+          </ReactMarkdown>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -194,7 +197,9 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
                 htmlFor={`option-${index}`} 
                 className="flex-1 cursor-pointer text-foreground"
               >
-                {option.text}
+                <ReactMarkdown>
+                  {option.text}
+                </ReactMarkdown>
               </Label>
               {showMainExplanation && option.is_correct && (
                 <span className="text-green-600 font-medium">✓ Correct</span>
@@ -209,7 +214,11 @@ export const QuestionCard = ({ question, onAnswerSubmit }: QuestionCardProps) =>
         {showMainExplanation && (
           <div className="mt-6 p-4 bg-background border-l-4 border-blue-500 rounded-r-lg">
             <h4 className="font-medium text-blue-900 mb-2">Explanation:</h4>
-            <p className="text-blue-800">{question.explanation}</p>
+            <div className="text-blue-800">
+              <ReactMarkdown>
+                {question.explanation}
+              </ReactMarkdown>
+            </div>
           </div>
         )}
 
